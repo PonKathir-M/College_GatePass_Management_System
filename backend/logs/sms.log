@@ -1,0 +1,15 @@
+[2026-02-11T05:12:47.123Z] To: +1234567890 | Msg: This is a test message from GatePass System.
+[2026-02-11T05:58:32.501Z] To: 8220342326 | Msg: Your ward Siddiq has applied for a gate pass. Reason: Official Work
+[2026-02-11T05:59:08.248Z] To: 8220342326 | Msg: Your ward's gate pass has been approved by tutor
+[2026-02-11T05:59:51.289Z] To: 8220342326 | Msg: Gate pass approved. Your ward can leave campus.
+Out: 11:28:00
+Expected Return: 13:28:00
+[2026-02-11T06:01:04.247Z] To: 8220342326 | Msg: Your ward left campus at 11:31:02 am
+[2026-02-11T06:02:12.085Z] To: 8220342326 | Msg: Your ward returned to campus at 11:32:11 am
+[2026-02-13T16:41:28.079Z] To: 9894789694 | Msg: Your ward SubiKumar has applied for a gate pass. Reason: Family Emergency
+[2026-02-13T16:42:01.530Z] To: 9894789694 | Msg: Your ward's gate pass has been approved by tutor
+[2026-02-13T16:42:26.826Z] To: 9894789694 | Msg: Gate pass approved. Your ward can leave campus.
+Out: 11:11:00
+Expected Return: 14:11:00
+[2026-02-13T16:43:02.611Z] To: 9894789694 | Msg: Your ward left campus at 10:12:55 pm
+[2026-02-13T16:43:23.988Z] To: 9894789694 | Msg: Your ward returned to campus at 10:13:23 pm

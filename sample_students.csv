@@ -1,0 +1,7 @@
+name,email,year,category,parent_phone,department_name
+John Doe,john.doe@example.com,1,day-scholar,9876543210,CSE
+Jane Smith,jane.smith@example.com,2,hosteller,8765432109,ECE
+Alice Johnson,alice.j@example.com,3,day-scholar,7654321098,Mech
+Bob Williams,bob.w@example.com,4,hosteller,6543210987,CSE
+Eve Brown,eve.b@example.com,1,hosteller,5432109876,ECE
+Charlie Davis,charlie.d@example.com,2,day-scholar,4321098765,Civil

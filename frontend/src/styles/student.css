@@ -1,0 +1,17 @@
+.student-dashboard {
+  padding: 20px;
+}
+
+.card {
+  background: #fff;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  box-shadow: 0 0 5px #ccc;
+}
+
+input, button {
+  display: block;
+  margin: 8px 0;
+  padding: 6px;
+}

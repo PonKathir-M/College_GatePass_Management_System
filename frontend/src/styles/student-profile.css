@@ -1,0 +1,274 @@
+.profile-container {
+    padding: 20px;
+    font-family: 'Poppins', sans-serif;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.profile-header {
+    margin-bottom: 30px;
+}
+
+.profile-header h1 {
+    font-size: 2rem;
+    color: #2d3748;
+    margin-bottom: 5px;
+}
+
+.profile-header p {
+    color: #718096;
+}
+
+.profile-content {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 30px;
+}
+
+@media (max-width: 768px) {
+    .profile-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Digital ID Card */
+.digital-id-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 30px;
+    color: white;
+    box-shadow: 0 10px 25px rgba(118, 75, 162, 0.4);
+    position: relative;
+    overflow: hidden;
+    min-height: 460px;
+    /* Increased height to fit content */
+    display: flex;
+    flex-direction: column;
+}
+
+.digital-id-card::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.id-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 15px;
+}
+
+.college-logo {
+    font-size: 2rem;
+}
+
+.college-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.id-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.profile-image-container {
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    background: white;
+    color: #667eea;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: bold;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.student-details h2 {
+    margin: 0 0 15px 0;
+    font-size: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    background: rgba(0, 0, 0, 0.15);
+    padding: 10px 15px;
+    border-radius: 10px;
+}
+
+.detail-row .label {
+    opacity: 0.8;
+}
+
+.detail-row .value {
+    font-weight: 600;
+}
+
+.detail-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: auto;
+    padding-top: 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.role-badge {
+    background: #ff9f43;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: white;
+    text-transform: uppercase;
+}
+
+.qr-code-placeholder {
+    width: 50px;
+    height: 50px;
+    background: white;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border-radius: 8px;
+    font-size: 0.8rem;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    margin: 0;
+    margin-bottom: 5px;
+}
+
+.stat-card p {
+    color: #718096;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.stat-card.blue h3 {
+    color: #4299e1;
+}
+
+.stat-card.orange h3 {
+    color: #ed8936;
+}
+
+.stat-card.red h3 {
+    color: #f56565;
+}
+
+.stat-card.green h3 {
+    color: #48bb78;
+}
+
+/* Info Section */
+.info-section {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.info-section h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #2d3748;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 10px;
+}
+
+.info-row {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #f7fafc;
+    padding-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row strong {
+    color: #4a5568;
+}
+
+.info-row span {
+    color: #2d3748;
+}
+
+.btn-edit-profile {
+    width: 100%;
+    padding: 12px;
+    background: #4299e1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s;
+}
+
+.btn-edit-profile:hover {
+    background: #3182ce;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

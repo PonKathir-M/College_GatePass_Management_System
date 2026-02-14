@@ -1,0 +1,390 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --text-light: #ffffff;
+  --text-dim: rgba(255, 255, 255, 0.8);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.login {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0f172a;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Dynamic Background */
+.login-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  background: radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.4), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.4), transparent 25%);
+}
+
+.bg-shape {
+  position: absolute;
+  filter: blur(80px);
+  opacity: 0.6;
+  z-index: 0;
+  animation: floatBackground 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bg-shape-1 {
+  width: 500px;
+  height: 500px;
+  background: #6366f1;
+  top: -100px;
+  left: -100px;
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+}
+
+.bg-shape-2 {
+  width: 400px;
+  height: 400px;
+  background: #ec4899;
+  bottom: -50px;
+  right: -50px;
+  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  animation-delay: -5s;
+}
+
+.bg-shape-3 {
+  width: 300px;
+  height: 300px;
+  background: #8b5cf6;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  animation: pulse 8s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes floatBackground {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  100% {
+    transform: translate(30px, 50px) rotate(10deg);
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+.login-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1200px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Glass Card Container for Content (Optional, if we want a main card) 
+   Currently using the full page feels more immersive, but let's style the header */
+
+.login-header {
+  text-align: center;
+  margin-bottom: 4rem;
+  animation: slideDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.login-header h1 {
+  font-size: 4rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(to right, #fff, #c7d2fe);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  letter-spacing: -1px;
+}
+
+.login-header p {
+  font-size: 1.25rem;
+  color: var(--text-dim);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+.login-container {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(240px, 1fr));
+  gap: 2rem;
+  width: 100%;
+  max-width: 1000px;
+  /* Constrain width for 3x2 grid */
+  margin-bottom: 3rem;
+  perspective: 1000px;
+}
+
+/* Glassmorphism Cards */
+.login-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  min-height: 200px;
+}
+
+/* Hover Effects */
+.login-btn:hover {
+  transform: translateY(-10px) scale(1.02);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.login-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.2), transparent 40%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.login-btn:hover::before {
+  opacity: 1;
+}
+
+/* Specific Role Colors on Hover/Active */
+.login-btn:nth-child(1):hover {
+  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.login-btn:nth-child(2):hover {
+  box-shadow: 0 20px 40px rgba(236, 72, 153, 0.3);
+  border-color: rgba(236, 72, 153, 0.5);
+}
+
+.login-btn:nth-child(3):hover {
+  box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.login-btn:nth-child(4):hover {
+  box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.login-btn:nth-child(5):hover {
+  box-shadow: 0 20px 40px rgba(245, 158, 11, 0.3);
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.login-btn:nth-child(6):hover {
+  box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+
+.btn-text {
+  position: relative;
+  z-index: 2;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+  margin-top: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.login-btn:hover .btn-text {
+  transform: scale(1.05);
+}
+
+/* Emojis styling */
+.login-btn span:first-child {
+  /* Assuming the first part of text is emoji, but better to wrap emoji in span in JSX */
+  font-size: 3.5rem;
+  margin-bottom: 0.5rem;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: block;
+}
+
+.login-btn:hover span:first-child {
+  transform: scale(1.2) rotate(5deg);
+}
+
+
+/* Footer styling */
+.login-footer {
+  margin-top: 4rem;
+  text-align: center;
+  color: var(--text-dim);
+  background: rgba(15, 23, 42, 0.6);
+  padding: 1.5rem 3rem;
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s backwards;
+}
+
+.login-footer p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.login-footer a {
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s;
+  margin-left: 0.5rem;
+}
+
+.login-footer a:hover {
+  border-bottom-color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.btn-loader {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  margin-left: 0.5rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* Admin Login Form Styles */
+form {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px);
+  padding: 3rem;
+  border-radius: 24px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 450px !important;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease;
+}
+
+form input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  transition: all 0.3s ease;
+}
+
+form input:focus {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
+form button[type="submit"] {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  border: none !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+form button[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 1024px) {
+  .login-container {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 700px;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-header h1 {
+    font-size: 2.5rem;
+  }
+
+  .login-container {
+    grid-template-columns: 1fr;
+    max-width: 350px;
+  }
+
+  .bg-shape {
+    opacity: 0.4;
+  }
+}

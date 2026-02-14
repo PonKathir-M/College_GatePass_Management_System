@@ -1,0 +1,9 @@
+POST /api/auth/login
+POST /api/student/gatepass
+GET  /api/student/gatepass
+GET  /api/tutor/pending
+POST /api/tutor/approve/:id
+POST /api/hod/approve/:id
+POST /api/security/out/:id
+POST /api/security/in/:id
+GET  /api/admin/analytics
