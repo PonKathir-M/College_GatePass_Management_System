@@ -70,16 +70,16 @@ const seedDatabase = async () => {
     // Create students for each department
     const studentData = [
       // CSE students
-      { deptIdx: 0, name: "Arjun Verma", email: "arjun.student@gatepass.com", year: 2, category: "General", parent_phone: "9876543210" },
-      { deptIdx: 0, name: "Kavya Sharma", email: "kavya.student@gatepass.com", year: 2, category: "General", parent_phone: "9876543211" },
-      { deptIdx: 0, name: "Rohan Mishra", email: "rohan.student@gatepass.com", year: 1, category: "OBC", parent_phone: "9876543212" },
-      { deptIdx: 0, name: "Sneha Patel", email: "sneha.student@gatepass.com", year: 1, category: "General", parent_phone: "9876543213" },
+      { deptIdx: 0, name: "Arjun Verma", email: "arjun.student@gatepass.com", year: 2, category: "General", parent_phone: "9876543210", student_mobile_number: "9876500001" },
+      { deptIdx: 0, name: "Kavya Sharma", email: "kavya.student@gatepass.com", year: 2, category: "General", parent_phone: "9876543211", student_mobile_number: "9876500002" },
+      { deptIdx: 0, name: "Rohan Mishra", email: "rohan.student@gatepass.com", year: 1, category: "OBC", parent_phone: "9876543212", student_mobile_number: "9876500003" },
+      { deptIdx: 0, name: "Sneha Patel", email: "sneha.student@gatepass.com", year: 1, category: "General", parent_phone: "9876543213", student_mobile_number: "9876500004" },
       // ECE students
-      { deptIdx: 1, name: "Aditya Kumar", email: "aditya.student@gatepass.com", year: 3, category: "General", parent_phone: "9876543214" },
-      { deptIdx: 1, name: "Nikita Singh", email: "nikita.student@gatepass.com", year: 2, category: "SC", parent_phone: "9876543215" },
+      { deptIdx: 1, name: "Aditya Kumar", email: "aditya.student@gatepass.com", year: 3, category: "General", parent_phone: "9876543214", student_mobile_number: "9876500005" },
+      { deptIdx: 1, name: "Nikita Singh", email: "nikita.student@gatepass.com", year: 2, category: "SC", parent_phone: "9876543215", student_mobile_number: "9876500006" },
       // MECH students
-      { deptIdx: 2, name: "Harsh Patel", email: "harsh.student@gatepass.com", year: 2, category: "General", parent_phone: "9876543216" },
-      { deptIdx: 2, name: "Pooja Desai", email: "pooja.student@gatepass.com", year: 1, category: "General", parent_phone: "9876543217" }
+      { deptIdx: 2, name: "Harsh Patel", email: "harsh.student@gatepass.com", year: 2, category: "General", parent_phone: "9876543216", student_mobile_number: "9876500007" },
+      { deptIdx: 2, name: "Pooja Desai", email: "pooja.student@gatepass.com", year: 1, category: "General", parent_phone: "9876543217", student_mobile_number: "9876500008" }
     ];
 
     for (const student of studentData) {
@@ -97,7 +97,8 @@ const seedDatabase = async () => {
         DepartmentDepartmentId: departmentIds[student.deptIdx],
         year: student.year,
         category: student.category,
-        parent_phone: student.parent_phone
+        parent_phone: student.parent_phone,
+        student_mobile_number: student.student_mobile_number
       });
     }
 

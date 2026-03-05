@@ -1,7 +1,11 @@
 const { PASS_STATUS } = require("../config/constants");
-const { isSunday, isHoliday, currentHour } = require("../utils/helpers");
+const { isSunday, isHoliday } = require("../utils/helpers");
+
+const normalizeCategory = (studentCategory) =>
+  (studentCategory || "").toString().trim().toLowerCase();
 
 exports.getInitialStatus = (studentCategory) => {
+  const normalizedCategory = normalizeCategory(studentCategory);
   const now = new Date();
   const hour = now.getHours();
   const minute = now.getMinutes();
@@ -9,54 +13,57 @@ exports.getInitialStatus = (studentCategory) => {
   const morningLimit = 9 * 60 + 15; // 9:15 AM
   const eveningLimit = 17 * 60 + 15; // 5:15 PM
 
-  // Check if hosteller trying to apply after 5:15 PM (not allowed)
-  if (studentCategory === "Hosteller" && timeInMinutes >= eveningLimit) {
-    return "BLOCKED"; // System should prevent application
+  // Hosteller cannot apply after 5:15 PM
+  if (normalizedCategory === "hosteller" && timeInMinutes >= eveningLimit) {
+    return "BLOCKED";
   }
 
-  // Sunday / holiday logic
+  // Sunday/holiday logic
   if (isSunday() || isHoliday(now)) {
-    if (studentCategory === "Hosteller") {
-      return "Warden Pending"; // Hosteller → Warden → HOD
+    if (normalizedCategory === "hosteller") {
+      return "Warden Pending";
     }
-    return "HOD Pending"; // Day scholar → Direct HOD
+    return "HOD Pending";
   }
 
-  // Hosteller early morning (before 9:15 AM)
-  if (studentCategory === "Hosteller" && timeInMinutes < morningLimit) {
+  // Hosteller early morning
+  if (normalizedCategory === "hosteller" && timeInMinutes < morningLimit) {
     return "Warden Pending";
   }
 
-  // Normal workflow: Tutor pending
+  // Normal workflow
   return PASS_STATUS.PENDING;
 };
 
 exports.canApplyGatePass = (studentCategory) => {
+  const normalizedCategory = normalizeCategory(studentCategory);
   const now = new Date();
   const hour = now.getHours();
   const minute = now.getMinutes();
   const timeInMinutes = hour * 60 + minute;
   const eveningLimit = 17 * 60 + 15; // 5:15 PM
 
-  // Day Scholars: Cannot apply on holidays/Sundays
-  if (studentCategory !== "Hosteller" && (isSunday() || isHoliday(now))) {
+  // Day scholars cannot apply on holidays/Sundays
+  if (normalizedCategory !== "hosteller" && (isSunday() || isHoliday(now))) {
     return false;
   }
 
-  // Hostellers: Cannot apply after 5:15 PM
-  if (studentCategory === "Hosteller" && timeInMinutes >= eveningLimit) {
+  // Hostellers cannot apply after 5:15 PM
+  if (normalizedCategory === "hosteller" && timeInMinutes >= eveningLimit) {
     return false;
   }
 
   return true;
 };
 
-exports.getNextApprover = (status, studentCategory, isHoliday = false) => {
-  if (isHoliday) {
-    if (studentCategory === "Hosteller" && status === "Warden Pending") {
+exports.getNextApprover = (status, studentCategory, isHolidayFlag = false) => {
+  const normalizedCategory = normalizeCategory(studentCategory);
+
+  if (isHolidayFlag) {
+    if (normalizedCategory === "hosteller" && status === "Warden Pending") {
       return "HOD";
     }
-    if (studentCategory === "Day Scholar" && status === "HOD Pending") {
+    if (normalizedCategory !== "hosteller" && status === "HOD Pending") {
       return "HOD";
     }
   }

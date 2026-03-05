@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import "../../styles/management.css";
+import "../styles/management.css";
 
 const DepartmentManagement = () => {
   const [departments, setDepartments] = useState([]);
@@ -13,8 +13,6 @@ const DepartmentManagement = () => {
 
   useEffect(() => {
     fetchDepartments();
-    const interval = setInterval(fetchDepartments, 10000);
-    return () => clearInterval(interval);
   }, []);
 
   const fetchDepartments = async () => {
@@ -22,13 +20,13 @@ const DepartmentManagement = () => {
       setLoading(true);
       const token = localStorage.getItem("token");
       console.log("Token:", token);
-
-      const response = await axios.get("http://localhost:5000/api/admin/department", {
-        headers: {
+      
+      const response = await axios.get("http://localhost:5001/api/admin/department", {
+        headers: { 
           Authorization: `Bearer ${token}`
         }
       });
-
+      
       console.log("Departments fetched:", response.data);
       setDepartments(response.data);
       setError("");
@@ -42,7 +40,7 @@ const DepartmentManagement = () => {
 
   const handleAddDept = async (e) => {
     e.preventDefault();
-
+    
     if (!newDept.trim()) {
       setError("Please enter a department name");
       return;
@@ -55,7 +53,7 @@ const DepartmentManagement = () => {
       if (editingId) {
         // Update department
         await axios.put(
-          `http://localhost:5000/api/admin/department/${editingId}`,
+          `http://localhost:5001/api/admin/department/${editingId}`,
           { department_name: newDept },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -63,7 +61,7 @@ const DepartmentManagement = () => {
       } else {
         // Create new department
         await axios.post(
-          "http://localhost:5000/api/admin/department",
+          "http://localhost:5001/api/admin/department",
           { department_name: newDept },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -74,10 +72,10 @@ const DepartmentManagement = () => {
       setEditingId(null);
       setShowForm(false);
       setError("");
-
+      
       // Refresh list
       fetchDepartments();
-
+      
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
@@ -102,12 +100,12 @@ const DepartmentManagement = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-
+      
       await axios.delete(
-        `http://localhost:5000/api/admin/department/${id}`,
+        `http://localhost:5001/api/admin/department/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+      
       setSuccessMessage("Department deleted successfully!");
       fetchDepartments();
       setTimeout(() => setSuccessMessage(""), 3000);
@@ -122,7 +120,7 @@ const DepartmentManagement = () => {
     <div className="management-container">
       <div className="management-header">
         <h2>🏢 Department Management</h2>
-        <button
+        <button 
           className="btn btn-primary"
           onClick={() => {
             setShowForm(!showForm);
@@ -165,7 +163,7 @@ const DepartmentManagement = () => {
             <button type="submit" className="btn btn-success" disabled={loading}>
               {loading ? "Saving..." : editingId ? "Update" : "Create"}
             </button>
-            <button
+            <button 
               type="button"
               className="btn btn-outline"
               onClick={() => {
@@ -203,7 +201,7 @@ const DepartmentManagement = () => {
                     <td className="dept-name">🏢 {dept.department_name}</td>
                     <td>
                       <span className="badge badge-secondary">
-                        {dept.Staffs?.length || 0} staff
+                        {dept.Staff?.length || 0} staff
                       </span>
                     </td>
                     <td className="action-buttons">
@@ -232,3 +230,4 @@ const DepartmentManagement = () => {
 };
 
 export default DepartmentManagement;
+

@@ -12,7 +12,7 @@ const Sidebar = ({ role, tabs, activeTab, setActiveTab, onLogout }) => {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h2>🎓 Campus Gate</h2>
+        <h2>{"\uD83C\uDF93"} Campus Gate</h2>
         <p className="sidebar-subtitle">Pass Management</p>
       </div>
 
@@ -32,7 +32,7 @@ const Sidebar = ({ role, tabs, activeTab, setActiveTab, onLogout }) => {
 
       <div className="sidebar-footer">
         <button className="nav-item logout-btn" onClick={handleLogout}>
-          <span className="nav-icon">🚪</span>
+          <span className="nav-icon">{"\uD83D\uDEAA"}</span>
           <span className="nav-text">Logout</span>
         </button>
       </div>
@@ -41,4 +41,3 @@ const Sidebar = ({ role, tabs, activeTab, setActiveTab, onLogout }) => {
 };
 
 export default Sidebar;
-

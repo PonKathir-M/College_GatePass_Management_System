@@ -9,7 +9,6 @@ const TutorApproval = require("./TutorApproval");
 const WardenApproval = require("./WardenApproval");
 const SecurityLog = require("./SecurityLog");
 const Notification = require("./Notification");
-const Announcement = require("./Announcement");
 
 /* Associations */
 
@@ -18,12 +17,6 @@ Staff.belongsTo(Department, { as: "Department", foreignKey: "DepartmentDepartmen
 
 Department.hasMany(Student, { as: "Students", foreignKey: "DepartmentDepartmentId" });
 Student.belongsTo(Department, { as: "Department", foreignKey: "DepartmentDepartmentId" });
-
-Department.hasMany(Announcement, { foreignKey: "DepartmentDepartmentId" });
-Announcement.belongsTo(Department, { foreignKey: "DepartmentDepartmentId" });
-
-Staff.hasMany(Announcement, { foreignKey: "StaffStaffId" });
-Announcement.belongsTo(Staff, { foreignKey: "StaffStaffId" });
 
 User.hasOne(Staff, { as: "Staff", foreignKey: "UserUserId" });
 Staff.belongsTo(User, { as: "User", foreignKey: "UserUserId" });
@@ -62,6 +55,5 @@ module.exports = {
   TutorApproval,
   WardenApproval,
   SecurityLog,
-  Notification,
-  Announcement
+  Notification
 };

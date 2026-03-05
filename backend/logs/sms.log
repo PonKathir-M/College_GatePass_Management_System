@@ -13,3 +13,17 @@ Out: 11:11:00
 Expected Return: 14:11:00
 [2026-02-13T16:43:02.611Z] To: 9894789694 | Msg: Your ward left campus at 10:12:55 pm
 [2026-02-13T16:43:23.988Z] To: 9894789694 | Msg: Your ward returned to campus at 10:13:23 pm
+[2026-02-15T07:24:55.701Z] To: 9042637882 | Msg: Your ward subi has applied for a gate pass. Reason: Family Emergency
+[2026-02-15T07:25:49.457Z] To: 9042637882 | Msg: Your ward's morning gate pass approved by Warden
+[2026-02-26T10:39:54.865Z] To: 8220342326 | Msg: Your ward left campus at 4:09:53 pm
+[2026-02-27T06:50:21.451Z] To: 8220342326 | Msg: Your ward returned to campus at 12:20:20 pm
+[2026-02-27T06:51:13.165Z] To: 9042637882 | Msg: Your ward returned to campus at 12:21:12 pm
+[2026-02-27T07:12:44.026Z] To: 9042637882 | Msg: Your ward left campus at 12:42:42 pm
+[2026-02-28T17:02:01.284Z] To: 9042637882 | Msg: Your ward returned to campus at 10:32:00 pm
+[2026-03-02T04:47:45.558Z] To: 8220342326 | Msg: Your ward's gate pass has been approved by tutor
+[2026-03-02T04:48:27.639Z] To: 8220342326 | Msg: Gate pass approved. Your ward can leave campus.
+Out: 10:16:00
+Expected Return: 11:17:00
+[2026-03-02T04:51:40.048Z] To: 8220342326 | Msg: Your ward left campus at 10:21:39 am
+[2026-03-02T04:52:59.324Z] To: 8220342326 | Msg: Your ward returned to campus at 10:22:58 am
+[2026-03-03T07:00:44.245Z] To: 9042637882 | Msg: Your ward returned to campus at 12:30:42 pm

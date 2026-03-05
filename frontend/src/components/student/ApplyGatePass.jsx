@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "../styles/gatepass-form.css";
-import { applyGatePass, getProfile } from "../../services/studentService";
+import { applyGatePass, getMyPasses } from "../../services/studentService";
 
 const ApplyGatePass = () => {
   const [form, setForm] = useState({
@@ -29,12 +29,11 @@ const ApplyGatePass = () => {
   useEffect(() => {
     const fetchUserCategory = async () => {
       try {
-        const response = await getProfile();
-        // Get student category from profile
-        if (response.data && response.data.student) {
-          const category = response.data.student.category || "Day Scholar"; // Default to Day Scholar if missing
-          setUserCategory(category);
-          setForm(prev => ({ ...prev, category: category }));
+        const passes = await getMyPasses();
+        // Get student category from profile or latest pass
+        if (passes && passes.length > 0) {
+          setUserCategory(passes[0].Student?.category);
+          setForm(prev => ({ ...prev, category: passes[0].Student?.category || "day-scholar" }));
         }
       } catch (err) {
         console.error("Error fetching user info:", err);
@@ -72,11 +71,11 @@ const ApplyGatePass = () => {
 
       // Reset form after 4 seconds
       setTimeout(() => {
-        setForm({
-          reason: "",
-          out_time: "",
-          expected_return: "",
-          category: userCategory || "day-scholar"
+        setForm({ 
+          reason: "", 
+          out_time: "", 
+          expected_return: "", 
+          category: userCategory || "day-scholar" 
         });
         setSubmitted(false);
         setPassId(null);
@@ -138,14 +137,16 @@ const ApplyGatePass = () => {
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="category" className="form-label">Student Category</label>
-                  <input
+                  <select
                     id="category"
                     name="category"
                     value={form.category}
-                    readOnly
+                    onChange={handleChange}
                     className="form-input"
-                    style={{ backgroundColor: "#f1f5f9", cursor: "not-allowed" }}
-                  />
+                  >
+                    <option value="day-scholar">Day Scholar</option>
+                    <option value="hosteller">Hosteller</option>
+                  </select>
                 </div>
 
                 <div className="form-group">
@@ -210,8 +211,8 @@ const ApplyGatePass = () => {
                 )}
               </div>
 
-              <button
-                type="submit"
+              <button 
+                type="submit" 
                 className="btn btn-primary btn-lg"
                 disabled={!canApply || loading}
               >

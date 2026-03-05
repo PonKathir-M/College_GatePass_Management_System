@@ -19,6 +19,7 @@ const StudentHoverPopup = ({ student, extraInfo }) => {
             dept: student.Department?.department_name,
             category: student.category,
             phone: student.parent_phone,
+            studentMobile: student.student_mobile_number,
             pic: student.profile_pic
         };
     } else if (student.Student) {
@@ -30,6 +31,7 @@ const StudentHoverPopup = ({ student, extraInfo }) => {
             dept: student.Student.Department?.department_name,
             category: student.Student.category,
             phone: student.Student.parent_phone,
+            studentMobile: student.Student.student_mobile_number,
             pic: student.Student.profile_pic
         };
     } else {
@@ -41,12 +43,13 @@ const StudentHoverPopup = ({ student, extraInfo }) => {
             dept: student.department_name || "N/A",
             category: student.category || "N/A",
             phone: student.parent_phone || "N/A",
+            studentMobile: student.student_mobile_number || "N/A",
             pic: student.profile_pic
         };
     }
 
     const profilePicUrl = profileData.pic
-        ? `http://localhost:5000/uploads/${profileData.pic}`
+        ? `http://localhost:5001/uploads/${profileData.pic}`
         : null;
 
     return (
@@ -93,6 +96,10 @@ const StudentHoverPopup = ({ student, extraInfo }) => {
                             <span className="detail-value">{profileData.phone}</span>
                         </div>
                         <div className="detail-item">
+                            <span className="detail-label">Student Mobile</span>
+                            <span className="detail-value">{profileData.studentMobile || "N/A"}</span>
+                        </div>
+                        <div className="detail-item">
                             <span className="detail-label">Batch</span>
                             <span className="detail-value">2023 - 2027</span>
                         </div>
@@ -115,3 +122,4 @@ const StudentHoverPopup = ({ student, extraInfo }) => {
 };
 
 export default StudentHoverPopup;
+

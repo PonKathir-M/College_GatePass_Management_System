@@ -4,7 +4,6 @@ const {
   User,
   Announcement
 } = require("../models");
-const { Op } = require("sequelize");
 const generateId = require("../utils/generateGatePassId");
 const { getInitialStatus, canApplyGatePass } = require("../services/workflowService");
 const { notifyUser, notifyParent, notifyTutor, notifyHOD } = require("../services/notificationService");
@@ -13,21 +12,14 @@ exports.applyGatePass = async (req, res, next) => {
   try {
     const user = await User.findByPk(req.user.id);
     const student = await Student.findOne({ where: { UserUserId: user.user_id } });
-
+    
     if (!student) return res.status(404).json({ message: "Student profile not found" });
 
-    // Check if student is suspended
-    if (student.is_suspended) {
-      return res.status(403).json({ message: "You are currently suspended from applying for gate passes. Please contact your HOD." });
-    }
-
-    // Check if student can apply
+    // Check if student can apply (hosteller rules)
     if (!canApplyGatePass(student.category)) {
-      const now = new Date();
-      if (student.category !== "Hosteller" && (isSunday() || isHoliday(now))) {
-        return res.status(403).json({ message: "Day Scholars cannot apply for gate pass on holidays/Sundays" });
-      }
-      return res.status(403).json({ message: "Hostellers cannot apply for gate pass after 5:15 PM" });
+      return res.status(403).json({ 
+        message: "Hostellers cannot apply for gate pass after 5:15 PM" 
+      });
     }
 
     const status = getInitialStatus(student.category);
@@ -47,25 +39,11 @@ exports.applyGatePass = async (req, res, next) => {
       reference_id: pass.gatepass_id
     });
 
-    // Notify Parent
-    await notifyParent(student.student_id, `Your ward ${user.name} has applied for a gate pass. Reason: ${req.body.reason}`, {
-      reference_id: pass.gatepass_id
-    });
-
     if (status === "Warden Pending") {
       const warden = await User.findOne({ where: { role: "warden" } });
       if (warden) {
         await notifyUser(warden.user_id, `New gate pass from ${user.name}`, {
           type: "pending",
-          reference_id: pass.gatepass_id
-        });
-      }
-
-      // If it is a holiday, also notify the assigned Tutor (Informational only)
-      const { isHoliday, isSunday } = require("../utils/helpers");
-      if (isSunday() || isHoliday(new Date())) {
-        await notifyTutor(pass.gatepass_id, `Info: Hosteller ${user.name} applied for gate pass (Direct Warden Approval)`, {
-          type: "info",
           reference_id: pass.gatepass_id
         });
       }
@@ -79,7 +57,7 @@ exports.applyGatePass = async (req, res, next) => {
       });
     }
 
-    res.status(201).json({
+    res.status(201).json({ 
       message: "Gate pass request submitted successfully",
       gatepass_id: pass.gatepass_id,
       data: pass
@@ -93,7 +71,7 @@ exports.myGatePasses = async (req, res, next) => {
   try {
     const user = await User.findByPk(req.user.id);
     const student = await Student.findOne({ where: { UserUserId: user.user_id } });
-
+    
     if (!student) {
       return res.status(404).json({ message: "Student profile not found" });
     }
@@ -128,7 +106,7 @@ exports.getGatePassDetail = async (req, res, next) => {
 exports.cancelGatePass = async (req, res, next) => {
   try {
     const pass = await GatePass.findByPk(req.params.id);
-
+    
     if (!pass) {
       return res.status(404).json({ message: "Gate pass not found" });
     }
@@ -155,7 +133,7 @@ exports.cancelGatePass = async (req, res, next) => {
 exports.getProfile = async (req, res, next) => {
   try {
     const user = await User.findByPk(req.user.id);
-    const student = await Student.findOne({
+    const student = await Student.findOne({ 
       where: { UserUserId: user.user_id },
       include: "Department"
     });
@@ -175,27 +153,9 @@ exports.getProfile = async (req, res, next) => {
 
 exports.getAnnouncements = async (req, res, next) => {
   try {
-    const user = await User.findByPk(req.user.id);
-    const student = await Student.findOne({ where: { UserUserId: user.user_id } });
-
-    if (!student) {
-      return res.status(404).json({ message: "Student profile not found" });
-    }
-
     const announcements = await Announcement.findAll({
-      where: {
-        DepartmentDepartmentId: student.DepartmentDepartmentId,
-        is_active: true,
-        [Op.or]: [
-          { target_audience: "all" },
-          { target_audience: student.year.toString() }
-        ]
-      },
-      include: {
-        association: "Staff",
-        include: { association: "User", attributes: ["name"] }
-      },
-      order: [["priority", "DESC"], ["createdAt", "DESC"]]
+      order: [["createdAt", "DESC"]],
+      limit: 20
     });
 
     res.json(announcements);

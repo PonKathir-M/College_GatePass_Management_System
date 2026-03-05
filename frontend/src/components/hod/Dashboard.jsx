@@ -2,11 +2,11 @@ import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import Navbar from "../common/Navbar";
 import Sidebar from "../common/Sidebar";
-import StudentHistoryModal from "./StudentHistoryModal";
-import TrackingTab from "./TrackingTab";
-import AnalyticsTab from "./AnalyticsTab";
-import StudentSuspension from "./StudentSuspension";
 import axios from "axios";
+import AnalyticsTab from "./AnalyticsTab";
+import StudentHistoryModal from "./StudentHistoryModal";
+import DepartmentStudentsTab from "./DepartmentStudentsTab";
+import HodInsightsTab from "./HodInsightsTab";
 import "../styles/hod-dashboard.css";
 
 const Dashboard = () => {
@@ -15,33 +15,25 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
-
   const [pendingApprovals, setPendingApprovals] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState(null); // For modal
-  const [stats, setStats] = useState({
-    total: 0,
-    approved: 0,
-    rejected: 0,
-    pending: 0
-  });
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
 
   const tabs = [
-    { id: "pending", label: "⏳ Pending", icon: "⏳" },
-    { id: "tracking", label: "📡 Status Tracking", icon: "📡" },
-    { id: "analytics", label: "📊 Analytics", icon: "📊" },
-    { id: "suspension", label: "🚫 Block/Unblock", icon: "🚫" }
+    { id: "pending", label: "Pending", icon: "\u23F3" },
+    { id: "stats", label: "Analytics", icon: "\uD83D\uDCCA" },
+    { id: "students", label: "Students", icon: "\uD83D\uDC65" },
+    { id: "insights", label: "Top Insights", icon: "\uD83C\uDFC6" }
   ];
 
   useEffect(() => {
     fetchPendingApprovals();
-    fetchStats();
   }, []);
 
   const fetchPendingApprovals = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:5000/api/hod/pending", {
+      const response = await axios.get("http://localhost:5001/api/hod/pending", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPendingApprovals(response.data);
@@ -53,24 +45,18 @@ const Dashboard = () => {
     }
   };
 
-  const fetchStats = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:5000/api/hod/stats", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setStats(response.data);
-    } catch (err) {
-      console.error("Error fetching stats:", err);
-    }
-  };
-
   const formatTime = (timeString) => {
     if (!timeString) return "N/A";
-    if (timeString.includes(":")) {
-      return timeString.slice(0, 5); //HH:MM
-    }
+    if (timeString.includes(":")) return timeString.slice(0, 5);
     return timeString;
+  };
+
+  const getImageSrc = (profilePic) => {
+    if (!profilePic) return null;
+    if (String(profilePic).startsWith("http://") || String(profilePic).startsWith("https://")) {
+      return profilePic;
+    }
+    return `http://localhost:5001/uploads/${profilePic}`;
   };
 
   const handleApprove = async (id) => {
@@ -79,14 +65,12 @@ const Dashboard = () => {
     setActionLoading(id);
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:5000/api/hod/approve/${id}`, {}, {
+      await axios.post(`http://localhost:5001/api/hod/approve/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // Update UI
-      setPendingApprovals(prev => prev.filter(req => req.gatepass_id !== id));
-      fetchStats(); // Refresh stats
-      alert("Gate pass GRANTED successfully!");
+      setPendingApprovals((prev) => prev.filter((req) => req.gatepass_id !== id));
+      alert("Gate pass granted successfully.");
     } catch (err) {
       console.error("Approval error:", err);
       alert("Failed to grant gate pass");
@@ -102,13 +86,11 @@ const Dashboard = () => {
     setActionLoading(id);
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:5000/api/hod/reject/${id}`, { reason }, {
+      await axios.post(`http://localhost:5001/api/hod/reject/${id}`, { reason }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // Update UI
-      setPendingApprovals(prev => prev.filter(req => req.gatepass_id !== id));
-      fetchStats();
+      setPendingApprovals((prev) => prev.filter((req) => req.gatepass_id !== id));
       alert("Gate pass rejected.");
     } catch (err) {
       console.error("Rejection error:", err);
@@ -133,7 +115,7 @@ const Dashboard = () => {
 
         <div className="dashboard-content">
           <div className="content-header">
-            <h1>👔 HOD Dashboard</h1>
+            <h1>HOD Dashboard</h1>
             <p>Final approval for all gate pass requests</p>
           </div>
 
@@ -141,63 +123,74 @@ const Dashboard = () => {
 
           {activeTab === "pending" && (
             <div className="requests-container">
-              <h2>⏳ Awaiting HOD Approval</h2>
+              <h2>Awaiting HOD Approval</h2>
               {loading ? (
                 <div className="loading-spinner">Loading requests...</div>
               ) : pendingApprovals.length === 0 ? (
                 <div className="empty-state">
-                  <p>✨ No pending approvals</p>
+                  <p>No pending approvals</p>
                 </div>
               ) : (
                 <div className="approval-card-list">
                   {pendingApprovals.map((req) => (
                     <div key={req.gatepass_id} className="approval-card">
                       <div className="card-content">
-                        <div
-                          style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px', cursor: 'pointer' }}
-                          onClick={() => setSelectedStudentId(req.StudentStudentId)}
-                          title="Click to view full history"
-                        >
-                          <div style={{ width: '45px', height: '45px', borderRadius: '50%', overflow: 'hidden', background: '#e2e8f0', border: '2px solid white', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+                        <div className="student-identity-row">
+                          <button
+                            type="button"
+                            className="student-avatar-btn"
+                            onClick={() => setSelectedStudentId(req.Student?.student_id)}
+                            title="View full student history"
+                          >
                             {req.Student?.profile_pic ? (
                               <img
-                                src={`http://localhost:5000/uploads/${req.Student.profile_pic}`}
-                                alt={req.Student?.User?.name}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentNode.style.display = 'flex'; e.target.parentNode.style.alignItems = 'center'; e.target.parentNode.style.justifyContent = 'center'; e.target.parentNode.textContent = '👤'; }}
+                                src={getImageSrc(req.Student.profile_pic)}
+                                alt={req.Student?.User?.name || "Student"}
+                                onError={(e) => {
+                                  e.currentTarget.style.display = "none";
+                                  const fallback = e.currentTarget.nextSibling;
+                                  if (fallback) fallback.style.display = "flex";
+                                }}
                               />
-                            ) : (
-                              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>👤</div>
-                            )}
-                          </div>
+                            ) : null}
+                            <span
+                              className="student-avatar-fallback"
+                              style={{ display: req.Student?.profile_pic ? "none" : "flex" }}
+                            >
+                              S
+                            </span>
+                          </button>
+
                           <div>
                             <h3>{req.Student?.User?.name}</h3>
-                            <span style={{ fontSize: '0.8rem', color: '#666' }}>Click for history ↗</span>
+                            <small className="student-subtext">Click image to view history and reasons</small>
                           </div>
                         </div>
+
                         <div className="details">
-                          <span>📚 Year: {req.Student?.year}nd</span>
-                          <span>📝 Reason: {req.reason}</span>
-                          <span>⏰ {formatTime(req.out_time)} - {formatTime(req.expected_return)}</span>
+                          <span>Year: {req.Student?.year}nd</span>
+                          <span>Reason: {req.reason}</span>
+                          <span>{formatTime(req.out_time)} - {formatTime(req.expected_return)}</span>
                           <span className="badge status-approved">
-                            {req.status === "Tutor Approved" ? "✅ Tutor Approved" : "⏳ Pending"}
+                            {req.status === "Tutor Approved" ? "Tutor Approved" : "Pending"}
                           </span>
                         </div>
                       </div>
+
                       <div className="card-actions">
                         <button
                           className="btn btn-success"
                           onClick={() => handleApprove(req.gatepass_id)}
                           disabled={actionLoading === req.gatepass_id}
                         >
-                          {actionLoading === req.gatepass_id ? "..." : "✅ Grant Pass"}
+                          {actionLoading === req.gatepass_id ? "..." : "Grant Pass"}
                         </button>
                         <button
                           className="btn btn-danger"
                           onClick={() => handleReject(req.gatepass_id)}
                           disabled={actionLoading === req.gatepass_id}
                         >
-                          {actionLoading === req.gatepass_id ? "..." : "❌ Reject"}
+                          {actionLoading === req.gatepass_id ? "..." : "Reject"}
                         </button>
                       </div>
                     </div>
@@ -207,13 +200,12 @@ const Dashboard = () => {
             </div>
           )}
 
-          {activeTab === "tracking" && <TrackingTab />}
-          {activeTab === "analytics" && <AnalyticsTab />}
-          {activeTab === "suspension" && <StudentSuspension />}
+          {activeTab === "stats" && <AnalyticsTab />}
+          {activeTab === "students" && <DepartmentStudentsTab />}
+          {activeTab === "insights" && <HodInsightsTab />}
         </div>
       </div>
 
-      {/* Student History Modal */}
       {selectedStudentId && (
         <StudentHistoryModal
           studentId={selectedStudentId}
@@ -225,4 +217,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

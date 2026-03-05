@@ -23,7 +23,7 @@ const AnnouncementsTab = () => {
         try {
             setLoading(true);
             const token = localStorage.getItem("token");
-            const response = await axios.get("http://localhost:5000/api/tutor/announcements", {
+            const response = await axios.get("http://localhost:5001/api/tutor/announcements", {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAnnouncements(response.data);
@@ -48,7 +48,7 @@ const AnnouncementsTab = () => {
 
         try {
             const token = localStorage.getItem("token");
-            await axios.post("http://localhost:5000/api/tutor/announcements", formData, {
+            await axios.post("http://localhost:5001/api/tutor/announcements", formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -67,7 +67,7 @@ const AnnouncementsTab = () => {
 
         try {
             const token = localStorage.getItem("token");
-            await axios.delete(`http://localhost:5000/api/tutor/announcements/${id}`, {
+            await axios.delete(`http://localhost:5001/api/tutor/announcements/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchAnnouncements();
@@ -228,3 +228,4 @@ const AnnouncementsTab = () => {
 };
 
 export default AnnouncementsTab;
+

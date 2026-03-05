@@ -17,6 +17,7 @@ CREATE TABLE Students (
   year INT,
   category VARCHAR(50),
   parent_phone VARCHAR(15),
+  student_mobile_number VARCHAR(15),
   active BOOLEAN,
   UserUserId INT,
   DepartmentDepartmentId INT

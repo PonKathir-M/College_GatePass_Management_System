@@ -5,6 +5,7 @@ module.exports = {
       year: S.INTEGER,
       category: S.STRING,
       parent_phone: S.STRING,
+      student_mobile_number: S.STRING,
       active: { type: S.BOOLEAN, defaultValue: true },
       UserUserId: S.INTEGER,
       DepartmentDepartmentId: S.INTEGER,

@@ -3,11 +3,7 @@ import { AuthContext } from "../../context/AuthContext";
 import axios from "axios";
 import Navbar from "../common/Navbar";
 import Sidebar from "../common/Sidebar";
-import StudentHoverPopup from "../common/StudentHoverPopup";
-import StudentHistoryModal from "../hod/StudentHistoryModal";
 import StudentAssignmentCard from "./StudentAssignmentCard";
-import RequestHistory from "./RequestHistory";
-import AnnouncementsTab from "./AnnouncementsTab";
 import "../styles/tutor-dashboard.css";
 
 const Dashboard = () => {
@@ -22,14 +18,10 @@ const Dashboard = () => {
   const [departmentStudents, setDepartmentStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [staffProfile, setStaffProfile] = useState(null);
-  const [hoveredStudent, setHoveredStudent] = useState(null);
-  const [selectedStudentId, setSelectedStudentId] = useState(null);
 
   const tabs = [
     { id: "pending", label: "⏳ Pending Requests", icon: "⏳" },
     { id: "assign", label: "📋 Assign Students", icon: "📋" },
-    { id: "history", label: "📜 History", icon: "📜" },
-    { id: "announcements", label: "📢 Announcements", icon: "📢" },
   ];
 
   // Fetch pending requests
@@ -42,7 +34,7 @@ const Dashboard = () => {
   const fetchPendingRequests = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:5000/api/tutor/pending", {
+      const response = await axios.get("http://localhost:5001/api/tutor/pending", {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -60,7 +52,7 @@ const Dashboard = () => {
     try {
       const token = localStorage.getItem("token");
       // Get current user profile with staff details
-      const response = await axios.get("http://localhost:5000/api/tutor/profile", {
+      const response = await axios.get("http://localhost:5001/api/tutor/profile", {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data && response.data.Staff) {
@@ -75,7 +67,7 @@ const Dashboard = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:5000/api/tutor/students", {
+      const response = await axios.get("http://localhost:5001/api/tutor/students", {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -106,7 +98,7 @@ const Dashboard = () => {
     setActionLoading(id);
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:5000/api/tutor/approve/${id}`, {}, {
+      await axios.post(`http://localhost:5001/api/tutor/approve/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -128,7 +120,7 @@ const Dashboard = () => {
     setActionLoading(id);
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:5000/api/tutor/reject/${id}`,
+      await axios.post(`http://localhost:5001/api/tutor/reject/${id}`,
         { reason },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -212,28 +204,7 @@ const Dashboard = () => {
                     <tbody>
                       {pendingRequests.map((req) => (
                         <tr key={req.gatepass_id}>
-                          <td>
-                            <div
-                              style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
-                              onMouseEnter={() => setHoveredStudent(req.Student)}
-                              onMouseLeave={() => setHoveredStudent(null)}
-                              onClick={() => setSelectedStudentId(req.Student?.student_id)}
-                            >
-                              <div style={{ width: '35px', height: '35px', borderRadius: '50%', overflow: 'hidden', background: '#ccc' }}>
-                                {req.Student?.profile_pic ? (
-                                  <img
-                                    src={`http://localhost:5000/uploads/${req.Student.profile_pic}`}
-                                    alt={req.Student?.User?.name}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentNode.style.display = 'flex'; e.target.parentNode.style.alignItems = 'center'; e.target.parentNode.style.justifyContent = 'center'; e.target.parentNode.textContent = '👤'; }}
-                                  />
-                                ) : (
-                                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👤</div>
-                                )}
-                              </div>
-                              <strong>{req.Student?.User?.name || "Unknown"}</strong>
-                            </div>
-                          </td>
+                          <td><strong>{req.Student?.User?.name || "Unknown"}</strong></td>
                           <td>{req.Student?.year || "N/A"}nd</td>
                           <td>{req.reason}</td>
                           <td>{formatTime(req.out_time)}</td>
@@ -341,26 +312,12 @@ const Dashboard = () => {
               )}
             </div>
           )}
-
-          {/* Request History Tab */}
-          {activeTab === "history" && <RequestHistory />}
-
-          {/* Announcements Tab */}
-          {activeTab === "announcements" && <AnnouncementsTab />}
         </div>
       </div>
-      <StudentHoverPopup student={hoveredStudent} />
-
-      {selectedStudentId && (
-        <StudentHistoryModal
-          studentId={selectedStudentId}
-          onClose={() => setSelectedStudentId(null)}
-          apiEndpoint="http://localhost:5000/api/tutor/student-history"
-        />
-      )}
     </div>
   );
 };
 
 export default Dashboard;
+
 

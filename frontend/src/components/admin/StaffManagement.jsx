@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import "../../styles/management.css";
+import "../styles/management.css";
 
 const StaffManagement = () => {
   const [staffList, setStaffList] = useState([]);
-
+  const [assignedStudentsMap, setAssignedStudentsMap] = useState({});
   const [departments, setDepartments] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -19,8 +19,6 @@ const StaffManagement = () => {
     role: "staff",
     department_id: ""
   });
-
-  const [uploadLoading, setUploadLoading] = useState(false);
 
   const [filterRole, setFilterRole] = useState("all");
   const [filterDept, setFilterDept] = useState("all");
@@ -49,7 +47,7 @@ const StaffManagement = () => {
         return;
       }
 
-      const response = await axios.get("http://localhost:5000/api/admin/department", {
+      const response = await axios.get("http://localhost:5001/api/admin/department", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDepartments(response.data);
@@ -61,13 +59,14 @@ const StaffManagement = () => {
   const fetchStaff = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:5000/api/admin/staff", {
+      const response = await axios.get("http://localhost:5001/api/admin/staff", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
       setStaffList(response.data);
       setError("");
 
-
+      // Fetch assigned students for each staff member
+      fetchAssignedStudentsForAllStaff(response.data);
     } catch (err) {
       setError("Failed to load staff list");
       console.error(err);
@@ -76,7 +75,38 @@ const StaffManagement = () => {
     }
   };
 
+  const fetchAssignedStudentsForAllStaff = async (staff) => {
+    try {
+      const token = localStorage.getItem("token");
+      const studentMap = {};
 
+      // For each staff member, fetch their assigned students
+      for (const member of staff) {
+        try {
+          // We can use the students endpoint with a filter or create a new one
+          // For now, we'll fetch all students and filter by assignment
+          const response = await axios.get(
+            "http://localhost:5001/api/tutor/students",
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          // Count students assigned to this staff
+          const assignedCount = response.data.filter(
+            s => s.AssignedStaffStaffId === member.Staff?.staff_id
+          ).length;
+
+          studentMap[member.Staff?.staff_id || member.user_id] = assignedCount;
+        } catch (err) {
+          console.error(`Error fetching students for staff ${member.name}:`, err);
+          studentMap[member.Staff?.staff_id || member.user_id] = 0;
+        }
+      }
+
+      setAssignedStudentsMap(studentMap);
+    } catch (err) {
+      console.error("Error fetching assigned students:", err);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -112,7 +142,7 @@ const StaffManagement = () => {
           role: formData.role
         };
         await axios.put(
-          `http://localhost:5000/api/admin/staff/${editingId}`,
+          `http://localhost:5001/api/admin/staff/${editingId}`,
           updateData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -120,7 +150,7 @@ const StaffManagement = () => {
       } else {
         // Create new staff
         await axios.post(
-          "http://localhost:5000/api/admin/staff",
+          "http://localhost:5001/api/admin/staff",
           formData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -165,7 +195,7 @@ const StaffManagement = () => {
     try {
       setLoading(true);
       await axios.post(
-        `http://localhost:5000/api/admin/staff/${staffId}/deactivate`,
+        `http://localhost:5001/api/admin/staff/${staffId}/deactivate`,
         {},
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
@@ -176,68 +206,6 @@ const StaffManagement = () => {
       setError("Error deactivating staff");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleResetPasswordFlag = async (staffId) => {
-    if (!window.confirm("Reseting will set password to 'staff123' and require change on login. Continue?")) return;
-
-    try {
-      setLoading(true);
-      await axios.post(
-        `http://localhost:5000/api/admin/staff/${staffId}/reset-password-flag`,
-        {},
-        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-      );
-      setSuccessMessage("Staff password reset. They will be asked to change it on next login.");
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to update staff permission");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCsvUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Optional: Validate file type
-    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
-      setError("Please upload a valid CSV file");
-      return;
-    }
-
-    try {
-      setUploadLoading(true);
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await axios.post("http://localhost:5000/api/admin/staff/upload", formData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      const { summary } = res.data;
-      if (summary.failed > 0) {
-        setError(`Upload partial success. Success: ${summary.success}, Failed: ${summary.failed}. Errors: ${summary.errors.join('; ')}`);
-      } else {
-        setSuccessMessage(`Successfully uploaded ${summary.success} staff members!`);
-        setTimeout(() => setSuccessMessage(""), 3000);
-      }
-
-      fetchStaff();
-    } catch (err) {
-      console.error("CSV Upload Error:", err);
-      setError(err.response?.data?.message || "Error uploading CSV");
-    } finally {
-      setUploadLoading(false);
-      // Reset input
-      e.target.value = null;
     }
   };
 
@@ -252,24 +220,12 @@ const StaffManagement = () => {
     <div className="management-container">
       <div className="management-header">
         <h2>👨‍🏫 Staff Management</h2>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <label className={`btn ${uploadLoading ? 'btn-disabled' : 'btn-outline'}`} style={{ cursor: uploadLoading ? 'not-allowed' : 'pointer' }}>
-            {uploadLoading ? "Uploading..." : "📂 Upload CSV"}
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleCsvUpload}
-              disabled={uploadLoading}
-              style={{ display: 'none' }}
-            />
-          </label>
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowForm(!showForm)}
-          >
-            {showForm ? "Cancel" : "+ Add Staff"}
-          </button>
-        </div>
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowForm(!showForm)}
+        >
+          {showForm ? "Cancel" : "+ Add Staff"}
+        </button>
       </div>
 
       <div className="filters-bar">
@@ -443,7 +399,7 @@ const StaffManagement = () => {
                     <td>{staff.Staff?.Department?.department_name || "N/A"}</td>
                     <td>
                       <span className="badge badge-info">
-                        {staff.Staff?.AssignedStudents?.length || 0} students
+                        {assignedStudentsMap[staff.Staff?.staff_id] || 0} students
                       </span>
                     </td>
                     <td>
@@ -457,13 +413,6 @@ const StaffManagement = () => {
                         onClick={() => handleEditStaff(staff)}
                       >
                         ✏️ Edit
-                      </button>
-                      <button
-                        className="btn btn-sm btn-outline"
-                        onClick={() => handleResetPasswordFlag(staff.user_id)}
-                        title="Reset Password & Allow Change"
-                      >
-                        🔐
                       </button>
                       {staff.active && (
                         <button
@@ -486,3 +435,4 @@ const StaffManagement = () => {
 };
 
 export default StaffManagement;
+

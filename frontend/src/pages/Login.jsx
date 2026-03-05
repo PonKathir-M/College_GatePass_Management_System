@@ -46,7 +46,7 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", {
+      const response = await axios.post("http://localhost:5001/api/auth/login", {
         email: adminForm.email,
         password: adminForm.password
       });
@@ -70,58 +70,66 @@ const Login = () => {
   if (showAdminLogin) {
     return (
       <div className="login">
-        <div className="login-background">
-          <div className="bg-shape bg-shape-1"></div>
-          <div className="bg-shape bg-shape-2"></div>
-          <div className="bg-shape bg-shape-3"></div>
-        </div>
-
         <div className="login-content">
           <div className="login-header">
             <h1>👨‍💼 Admin Login</h1>
-            <p>Enter your credentials to access the dashboard</p>
+            <p>College Gate Pass System</p>
           </div>
 
           {error && (
-            <div style={{
-              backgroundColor: 'rgba(254, 226, 226, 0.9)',
-              color: '#991b1b',
-              padding: '1rem',
-              borderRadius: '12px',
-              marginBottom: '1rem',
-              backdropFilter: 'blur(4px)',
-              border: '1px solid #fecaca'
-            }}>
-              ❌ {error}
+            <div
+              style={{
+                backgroundColor: "#fee2e2",
+                color: "#991b1b",
+                padding: "1rem",
+                borderRadius: "8px",
+                marginBottom: "1rem"
+              }}
+            >
+              {error}
             </div>
           )}
 
-          <form onSubmit={handleAdminLogin}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.9)', fontWeight: '500' }}>
-                Email Address
+          <form onSubmit={handleAdminLogin} style={{ maxWidth: "400px", margin: "0 auto" }}>
+            <div style={{ marginBottom: "1rem" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", color: "white", fontWeight: "600" }}>
+                📧 Email
               </label>
               <input
                 type="email"
-                placeholder="admin@college.edu"
+                placeholder="Enter admin email"
                 value={adminForm.email}
                 onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
+                style={{
+                  width: "100%",
+                  padding: "0.75rem",
+                  border: "2px solid white",
+                  borderRadius: "8px",
+                  fontSize: "1rem",
+                  boxSizing: "border-box"
+                }}
                 required
-                style={{ width: '100%', padding: '1rem', borderRadius: '12px' }}
               />
             </div>
 
-            <div style={{ marginBottom: '2rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.9)', fontWeight: '500' }}>
-                Password
+            <div style={{ marginBottom: "1.5rem" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", color: "white", fontWeight: "600" }}>
+                🔐 Password
               </label>
               <input
                 type="password"
-                placeholder="••••••••"
+                placeholder="Enter password"
                 value={adminForm.password}
                 onChange={(e) => setAdminForm({ ...adminForm, password: e.target.value })}
+                style={{
+                  width: "100%",
+                  padding: "0.75rem",
+                  border: "2px solid white",
+                  borderRadius: "8px",
+                  fontSize: "1rem",
+                  boxSizing: "border-box"
+                }}
                 required
-                style={{ width: '100%', padding: '1rem', borderRadius: '12px' }}
               />
             </div>
 
@@ -129,16 +137,18 @@ const Login = () => {
               type="submit"
               disabled={loading}
               style={{
-                width: '100%',
-                padding: '1rem',
-                borderRadius: '12px',
-                color: 'white',
-                fontWeight: '600',
-                fontSize: '1.1rem',
-                cursor: loading ? 'wait' : 'pointer'
+                width: "100%",
+                padding: "0.75rem",
+                background: "white",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "1rem",
+                fontWeight: "600",
+                cursor: loading ? "not-allowed" : "pointer",
+                opacity: loading ? 0.7 : 1
               }}
             >
-              {loading ? "Authenticating..." : "Login to Dashboard"}
+              {loading ? "Logging in..." : "🔑 Login"}
             </button>
 
             <button
@@ -149,21 +159,27 @@ const Login = () => {
                 setError("");
               }}
               style={{
-                width: '100%',
-                marginTop: '1.5rem',
-                background: 'transparent',
-                border: 'none',
-                color: 'rgba(255,255,255,0.6)',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-                transition: 'color 0.2s'
+                width: "100%",
+                padding: "0.75rem",
+                background: "transparent",
+                border: "2px solid white",
+                borderRadius: "8px",
+                fontSize: "1rem",
+                fontWeight: "600",
+                color: "white",
+                cursor: "pointer",
+                marginTop: "1rem"
               }}
-              onMouseOver={(e) => e.target.style.color = 'white'}
-              onMouseOut={(e) => e.target.style.color = 'rgba(255,255,255,0.6)'}
             >
-              ← Back to Role Selection
+              ← Back to Login
             </button>
           </form>
+        </div>
+
+        <div className="login-background">
+          <div className="bg-shape bg-shape-1"></div>
+          <div className="bg-shape bg-shape-2"></div>
+          <div className="bg-shape bg-shape-3"></div>
         </div>
       </div>
     );
@@ -171,28 +187,23 @@ const Login = () => {
 
   return (
     <div className="login">
-      <div className="login-background">
-        <div className="bg-shape bg-shape-1"></div>
-        <div className="bg-shape bg-shape-2"></div>
-        <div className="bg-shape bg-shape-3"></div>
-      </div>
-
       <div className="login-content">
         <div className="login-header">
-          <h1>College Gate Pass</h1>
-          <p>Secure Campus Access Management System</p>
+          <h1>🎓 College Gate Pass System</h1>
+          <p>Secure & Centralized Campus Access Management</p>
         </div>
 
         {error && (
-          <div style={{
-            backgroundColor: 'rgba(254, 226, 226, 0.9)',
-            color: '#991b1b',
-            padding: '1rem',
-            borderRadius: '12px',
-            marginBottom: '2rem',
-            backdropFilter: 'blur(4px)'
-          }}>
-            ❌ {error}
+          <div
+            style={{
+              backgroundColor: "#fee2e2",
+              color: "#991b1b",
+              padding: "1rem",
+              borderRadius: "8px",
+              marginBottom: "1rem"
+            }}
+          >
+            {error}
           </div>
         )}
 
@@ -205,20 +216,19 @@ const Login = () => {
               className="login-btn"
               title={role.title}
             >
-              <span>{role.icon}</span>
-              <span className="btn-text">{role.label}</span>
+              <span className="btn-emoji" aria-hidden="true">{role.icon}</span>
+              <span className="btn-label">{role.label}</span>
               {loading && <div className="btn-loader"></div>}
             </button>
           ))}
         </div>
 
-        <div className="login-footer">
-          <p>Select your role to continue</p>
-          <div style={{ marginTop: '1rem', fontSize: '0.9rem', opacity: 0.8 }}>
-            <p>Staff/Tutor? <a href="/staff">Login here</a></p>
-            <p>Student? <a href="/student-login">Login here</a></p>
-          </div>
-        </div>
+      </div>
+
+      <div className="login-background">
+        <div className="bg-shape bg-shape-1"></div>
+        <div className="bg-shape bg-shape-2"></div>
+        <div className="bg-shape bg-shape-3"></div>
       </div>
     </div>
   );

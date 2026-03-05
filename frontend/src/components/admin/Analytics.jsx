@@ -33,7 +33,7 @@ const Analytics = () => {
   const fetchDepartments = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/admin/department", {
+      const res = await axios.get("http://localhost:5001/api/admin/department", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDepartments(res.data);
@@ -44,10 +44,11 @@ const Analytics = () => {
 
   const fetchAdvancedStats = async () => {
     setLoading(true);
+    setError(null);
     try {
       const token = localStorage.getItem("token");
       const params = new URLSearchParams(filters);
-      const res = await axios.get(`http://localhost:5000/api/admin/advanced-stats?${params}`, {
+      const res = await axios.get(`http://localhost:5001/api/admin/advanced-stats?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -57,6 +58,7 @@ const Analytics = () => {
         departmentBreakdown: res.data.department_breakdown,
         distribution: res.data.distribution
       });
+      setError(null);
     } catch (err) {
       console.error("Failed to load analytics:", err);
       setError("Failed to load analytics data");
@@ -81,7 +83,7 @@ const Analytics = () => {
     downloadAnchorNode.remove();
   };
 
-  if (loading && !stats.summary.total) {
+  if (loading && !stats.summary.total && !error) {
     return (
       <div className="analytics-container">
         <div className="loading-skeleton">
@@ -99,6 +101,11 @@ const Analytics = () => {
 
   return (
     <div className="analytics-container">
+      {error && (
+        <div style={{ padding: '15px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '8px', marginBottom: '15px', outline: '1px solid #f87171' }}>
+          <strong>Error: </strong> {error}
+        </div>
+      )}
       {/* Stats Grid - Moved to top as per request */}
       <div className="analytics-stats-grid">
         <div className="stat-card stat-blue">
@@ -162,8 +169,8 @@ const Analytics = () => {
             <label>Category</label>
             <select name="category" value={filters.category} onChange={handleFilterChange} className="filter-select">
               <option value="all">All Categories</option>
-              <option value="Day Scholar">Day Scholar</option>
-              <option value="Hosteller">Hosteller</option>
+              <option value="day-scholar">Day Scholar</option>
+              <option value="hosteller">Hosteller</option>
             </select>
           </div>
         </div>

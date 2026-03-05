@@ -26,12 +26,4 @@ router.post("/unassign/:student_id", auth, role(["staff"]), ctrl.unassignStudent
 // Approval history
 router.get("/history", auth, role(["staff"]), ctrl.getApprovalHistory);
 
-// Student History for popup
-router.get("/student-history/:studentId", auth, role(["staff"]), ctrl.getStudentHistory);
-
-// Announcements
-router.post("/announcements", auth, role(["staff"]), ctrl.createAnnouncement);
-router.get("/announcements", auth, role(["staff"]), ctrl.getAnnouncements);
-router.delete("/announcements/:id", auth, role(["staff"]), ctrl.deleteAnnouncement);
-
 module.exports = router;

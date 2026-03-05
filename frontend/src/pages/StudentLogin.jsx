@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
-import "../styles/login.css"; // Using the central login styles
+import "../styles/student-login.css";
 
 const StudentLogin = () => {
 	const { login } = useContext(AuthContext);
@@ -25,7 +25,7 @@ const StudentLogin = () => {
 		}
 
 		try {
-			const response = await axios.post("http://localhost:5000/api/auth/login", {
+			const response = await axios.post("http://localhost:5001/api/auth/login", {
 				email,
 				password
 			});
@@ -55,118 +55,102 @@ const StudentLogin = () => {
 	};
 
 	return (
-		<div className="login">
-			<div className="login-background">
-				<div className="bg-shape bg-shape-1"></div>
-				<div className="bg-shape bg-shape-2"></div>
-				<div className="bg-shape bg-shape-3"></div>
-			</div>
-
-			<div className="login-content">
-				<div className="login-header">
-					<h1>👨‍🎓 Student Portal</h1>
-					<p>College Gate Pass System</p>
-				</div>
-
-				{error && (
-					<div style={{
-						backgroundColor: 'rgba(254, 226, 226, 0.9)',
-						color: '#991b1b',
-						padding: '1rem',
-						borderRadius: '12px',
-						marginBottom: '1rem',
-						backdropFilter: 'blur(4px)',
-						border: '1px solid #fecaca'
-					}}>
-						❌ {error}
-					</div>
-				)}
-
-				<form onSubmit={handleLogin}>
-					<div style={{ marginBottom: '1.5rem' }}>
-						<label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.9)', fontWeight: '500' }}>
-							📧 Email Address
-						</label>
-						<input
-							type="email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							placeholder="Enter your college email"
-							disabled={loading}
-							required
-							style={{ width: '100%', padding: '1rem', borderRadius: '12px' }}
-						/>
+		<div className="student-login">
+			<div className="student-login-container">
+				<div className="student-login-card">
+					<div className="student-login-header">
+						<h1>👨‍🎓 Student Portal</h1>
+						<p>College Gate Pass System</p>
 					</div>
 
-					<div style={{ marginBottom: '2rem' }}>
-						<label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.9)', fontWeight: '500' }}>
-							🔐 Password
-						</label>
-						<div style={{ position: 'relative' }}>
+					<form onSubmit={handleLogin} className="student-login-form">
+						{error && (
+							<div className="student-error-message">
+								<span>❌</span>
+								<p>{error}</p>
+							</div>
+						)}
+
+						<div className="form-group">
+							<label htmlFor="email">📧 Email Address</label>
 							<input
-								type={showPassword ? "text" : "password"}
-								value={password}
-								onChange={(e) => setPassword(e.target.value)}
-								placeholder="Enter your password"
+								type="email"
+								id="email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								placeholder="Enter your college email"
 								disabled={loading}
 								required
-								style={{ width: '100%', padding: '1rem', borderRadius: '12px' }}
 							/>
-							<button
-								type="button"
-								onClick={() => setShowPassword(!showPassword)}
-								style={{
-									position: 'absolute',
-									right: '1rem',
-									top: '50%',
-									transform: 'translateY(-50%)',
-									background: 'none',
-									border: 'none',
-									cursor: 'pointer',
-									fontSize: '1.2rem',
-									padding: 0
-								}}
-							>
-								{showPassword ? "👁️" : "👁️‍🗨️"}
-							</button>
 						</div>
-					</div>
 
-					<button
-						type="submit"
-						disabled={loading}
-						style={{
-							width: '100%',
-							padding: '1rem',
-							borderRadius: '12px',
-							color: 'white',
-							fontWeight: '600',
-							fontSize: '1.1rem',
-							cursor: loading ? 'wait' : 'pointer'
-						}}
-					>
-						{loading ? "Logging in..." : "🔓 Sign In"}
-					</button>
+						<div className="form-group">
+							<label htmlFor="password">🔐 Password</label>
+							<div className="password-input-wrapper">
+								<input
+									type={showPassword ? "text" : "password"}
+									id="password"
+									value={password}
+									onChange={(e) => setPassword(e.target.value)}
+									placeholder="Enter your password"
+									disabled={loading}
+									required
+								/>
+								<button
+									type="button"
+									className="toggle-password"
+									onClick={() => setShowPassword(!showPassword)}
+									disabled={loading}
+								>
+									{showPassword ? "👁️" : "👁️‍🗨️"}
+								</button>
+							</div>
+						</div>
 
-					<div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-						<a
-							href="/"
-							style={{
-								color: 'rgba(255,255,255,0.7)',
-								textDecoration: 'none',
-								fontSize: '0.9rem',
-								transition: 'color 0.2s'
-							}}
-							onMouseOver={(e) => e.target.style.color = 'white'}
-							onMouseOut={(e) => e.target.style.color = 'rgba(255,255,255,0.7)'}
+						<button
+							type="submit"
+							className="student-login-btn"
+							disabled={loading}
 						>
-							← Back to Main Login
-						</a>
+							{loading ? (
+								<>
+									<span className="loader"></span>
+									Logging in...
+								</>
+							) : (
+								"🔓 Sign In"
+							)}
+						</button>
+					</form>
+
+					<div className="student-login-footer">
+						<p>Don't have login credentials?</p>
+						<p className="contact-info">Contact your college administration</p>
 					</div>
-				</form>
+
+					<div className="student-login-help">
+						<p>
+							<a href="/">← Back to Main Login</a>
+						</p>
+					</div>
+				</div>
+
+				<div className="student-login-sidebar">
+					<div className="sidebar-content">
+						<h2>Welcome to Student Portal</h2>
+						<ul className="features-list">
+							<li>📝 Apply for gate pass</li>
+							<li>📊 Track your requests</li>
+							<li>✅ View approvals</li>
+							<li>📋 View gate pass history</li>
+							<li>👤 Manage your profile</li>
+						</ul>
+					</div>
+				</div>
 			</div>
 		</div>
 	);
 };
 
 export default StudentLogin;
+

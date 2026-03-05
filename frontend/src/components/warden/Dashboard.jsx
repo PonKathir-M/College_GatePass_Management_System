@@ -34,7 +34,7 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/warden/requests", {
+      const res = await axios.get("http://localhost:5001/api/warden/requests", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMorningRequests(res.data);
@@ -55,7 +55,7 @@ const Dashboard = () => {
         year: filterYear
       }).toString();
 
-      const res = await axios.get(`http://localhost:5000/api/warden/students?${query}`, {
+      const res = await axios.get(`http://localhost:5001/api/warden/students?${query}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStudents(res.data);
@@ -71,7 +71,7 @@ const Dashboard = () => {
     try {
       if (departments.length > 0) return; // Already loaded
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/warden/departments", {
+      const res = await axios.get("http://localhost:5001/api/warden/departments", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDepartments(res.data);
@@ -83,7 +83,7 @@ const Dashboard = () => {
   const handleApprove = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:5000/api/warden/approve/${id}`, {}, {
+      await axios.post(`http://localhost:5001/api/warden/approve/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSuccess("Request approved successfully");
@@ -101,7 +101,7 @@ const Dashboard = () => {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:5000/api/warden/reject/${id}`, { reason }, {
+      await axios.post(`http://localhost:5001/api/warden/reject/${id}`, { reason }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSuccess("Request rejected");
@@ -163,7 +163,7 @@ const Dashboard = () => {
                           <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', background: '#e2e8f0' }}>
                             {req.Student?.profile_pic ? (
                               <img
-                                src={`http://localhost:5000/uploads/${req.Student.profile_pic}`}
+                                src={`http://localhost:5001/uploads/${req.Student.profile_pic}`}
                                 alt={req.Student?.User?.name}
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentNode.textContent = '👤'; e.target.parentNode.style.display = 'flex'; e.target.parentNode.style.alignItems = 'center'; e.target.parentNode.style.justifyContent = 'center'; }}
@@ -236,6 +236,7 @@ const Dashboard = () => {
                         <th>Year</th>
                         <th>Department</th>
                         <th>Parent Phone</th>
+                        <th>Student Mobile</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -249,7 +250,7 @@ const Dashboard = () => {
                               onMouseLeave={() => setHoveredStudent(null)}
                             >
                               {student.profile_pic ? (
-                                <img src={`http://localhost:5000/uploads/${student.profile_pic}`} alt="Profile" />
+                                <img src={`http://localhost:5001/uploads/${student.profile_pic}`} alt="Profile" />
                               ) : "👤"}
                             </div>
                           </td>
@@ -257,6 +258,7 @@ const Dashboard = () => {
                           <td>{student.year} Year</td>
                           <td>{student.Department?.department_name}</td>
                           <td>{student.parent_phone}</td>
+                          <td>{student.student_mobile_number || "N/A"}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -273,4 +275,5 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
 

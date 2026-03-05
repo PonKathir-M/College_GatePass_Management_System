@@ -13,7 +13,7 @@ const StudentAssignmentCard = ({ student, isAssignedToMe, onAssignmentChange }) 
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `http://localhost:5000/api/tutor/assign/${student.student_id}`,
+        `http://localhost:5001/api/tutor/assign/${student.student_id}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -34,7 +34,7 @@ const StudentAssignmentCard = ({ student, isAssignedToMe, onAssignmentChange }) 
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `http://localhost:5000/api/tutor/unassign/${student.student_id}`,
+        `http://localhost:5001/api/tutor/unassign/${student.student_id}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -71,6 +71,10 @@ const StudentAssignmentCard = ({ student, isAssignedToMe, onAssignmentChange }) 
         <div className="info-row">
           <span className="label">📞 Parent Phone:</span>
           <span className="value">{student.parent_phone || "N/A"}</span>
+        </div>
+        <div className="info-row">
+          <span className="label">Student Mobile:</span>
+          <span className="value">{student.student_mobile_number || "N/A"}</span>
         </div>
       </div>
 
@@ -120,3 +124,4 @@ const StudentAssignmentCard = ({ student, isAssignedToMe, onAssignmentChange }) 
 };
 
 export default StudentAssignmentCard;
+

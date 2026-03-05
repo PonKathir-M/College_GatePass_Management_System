@@ -6,6 +6,7 @@ const Student = sequelize.define("Student", {
   year: DataTypes.INTEGER,
   category: DataTypes.STRING,
   parent_phone: DataTypes.STRING,
+  student_mobile_number: DataTypes.STRING,
   profile_pic: { type: DataTypes.STRING, allowNull: true },
   active: { type: DataTypes.BOOLEAN, defaultValue: true },
   is_suspended: { type: DataTypes.BOOLEAN, defaultValue: false },

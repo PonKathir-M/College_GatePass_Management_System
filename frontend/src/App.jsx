@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import StaffLogin from "./pages/StaffLogin";
 import StudentLogin from "./pages/StudentLogin";
-import ForcePasswordChange from "./pages/ForcePasswordChange";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -24,12 +23,6 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/staff" element={<StaffLogin />} />
           <Route path="/student-login" element={<StudentLogin />} />
-
-          <Route path="/change-password" element={
-            <ProtectedRoute>
-              <ForcePasswordChange />
-            </ProtectedRoute>
-          } />
 
           <Route path="/admin" element={
             <ProtectedRoute role="admin">

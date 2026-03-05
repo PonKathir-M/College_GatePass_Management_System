@@ -1,0 +1,172 @@
+.dashboard-content .btn,
+.dashboard-content button.btn {
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.dashboard-content .btn:hover,
+.dashboard-content button.btn:hover {
+  transform: translateY(-1px);
+}
+
+.dashboard-content .btn:disabled,
+.dashboard-content button.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.dashboard-content .btn-primary {
+  background: linear-gradient(130deg, #1d72f2 0%, #1155d1 100%);
+  border-color: #145ed8;
+  color: #fff;
+}
+
+.dashboard-content .btn-success {
+  background: #208a57;
+  border-color: #197749;
+  color: #fff;
+}
+
+.dashboard-content .btn-danger {
+  background: #d92d20;
+  border-color: #bd261a;
+  color: #fff;
+}
+
+.dashboard-content .btn-outline {
+  background: #f9fbff;
+  border-color: #bfd1eb;
+  color: #2b4a72;
+}
+
+.dashboard-content .filter-select,
+.dashboard-content .search-input,
+.dashboard-content input[type="text"],
+.dashboard-content input[type="email"],
+.dashboard-content input[type="tel"],
+.dashboard-content input[type="password"],
+.dashboard-content input[type="date"],
+.dashboard-content select,
+.dashboard-content textarea {
+  border: 1px solid #c7d8ef;
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+  color: #1f3a5f;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-content .filter-select:focus,
+.dashboard-content .search-input:focus,
+.dashboard-content input:focus,
+.dashboard-content select:focus,
+.dashboard-content textarea:focus {
+  outline: none;
+  border-color: #4a80dd;
+  box-shadow: 0 0 0 3px rgba(74, 128, 221, 0.15);
+}
+
+.dashboard-content .requests-container,
+.dashboard-content .assign-container,
+.dashboard-content .students-section,
+.dashboard-content .announcement-form-card,
+.dashboard-content .announcements-list,
+.dashboard-content .stats-container,
+.dashboard-content .analytics-container,
+.dashboard-content .security-container,
+.dashboard-content .track-container,
+.dashboard-content .history-container {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  background: var(--surface);
+}
+
+.dashboard-content .requests-table,
+.dashboard-content .history-table {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #dce8f8;
+}
+
+.dashboard-content .requests-table table,
+.dashboard-content .history-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dashboard-content .requests-table th,
+.dashboard-content .history-table th {
+  background: linear-gradient(90deg, #eaf2ff 0%, #e8f7f7 100%);
+  color: #22466c;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  padding: 0.8rem 0.9rem;
+}
+
+.dashboard-content .requests-table td,
+.dashboard-content .history-table td {
+  padding: 0.82rem 0.9rem;
+  border-bottom: 1px solid #e6edf8;
+}
+
+.dashboard-content .requests-table tr:hover,
+.dashboard-content .history-table tr:hover {
+  background: #f7fbff;
+}
+
+.dashboard-content .stat-card {
+  border: 1px solid #d4e3f7;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #ffffff 0%, #f5f9ff 100%);
+  box-shadow: 0 10px 20px rgba(26, 68, 136, 0.08);
+}
+
+.dashboard-content .stat-card h3,
+.dashboard-content .stat-value {
+  color: #123d7d;
+}
+
+.dashboard-content .error-banner,
+.dashboard-content .error-message,
+.dashboard-content .alert-error {
+  background: #feefee;
+  border: 1px solid #f6c0ba;
+  color: #8e251d;
+  border-radius: 10px;
+}
+
+.dashboard-content .alert-success {
+  background: #e8f7ef;
+  border: 1px solid #b9e6ce;
+  color: #145935;
+  border-radius: 10px;
+}
+
+.dashboard-content .badge {
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.dashboard-content .approval-card,
+.dashboard-content .warden-request-card,
+.dashboard-content .announcement-card,
+.dashboard-content .student-assignment-card,
+.dashboard-content .track-card {
+  border: 1px solid #d7e4f6;
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  background: #fff;
+}
+
+.dashboard-content .approval-card:hover,
+.dashboard-content .warden-request-card:hover,
+.dashboard-content .announcement-card:hover,
+.dashboard-content .student-assignment-card:hover,
+.dashboard-content .track-card:hover {
+  box-shadow: var(--shadow-md);
+}

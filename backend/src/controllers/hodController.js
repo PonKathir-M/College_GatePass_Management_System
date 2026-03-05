@@ -1,8 +1,53 @@
-const { GatePass, WardenApproval, Student, User, SecurityLog, sequelize } = require("../models");
+const { GatePass, Student, User, SecurityLog } = require("../models");
 const { PASS_STATUS } = require("../config/constants");
 const { notifyUser, notifyParent, notifySecurityGuard } = require("../services/notificationService");
 const moment = require("moment");
 const { Op } = require("sequelize");
+
+const RANGE_DAYS_MAP = {
+  "7d": 7,
+  "30d": 30,
+  "90d": 90,
+  "180d": 180,
+  "365d": 365
+};
+
+const getDateBoundsFromQuery = (query = {}) => {
+  const { range = "7d", startDate, endDate } = query;
+  const now = moment();
+
+  let startMoment = null;
+  let endMoment = now.clone().endOf("day");
+
+  if (range === "custom") {
+    if (startDate) startMoment = moment(startDate).startOf("day");
+    if (endDate) endMoment = moment(endDate).endOf("day");
+  } else if (RANGE_DAYS_MAP[range]) {
+    startMoment = now.clone().subtract(RANGE_DAYS_MAP[range] - 1, "days").startOf("day");
+  } else if (range === "all") {
+    startMoment = null;
+  }
+
+  const createdAt = {};
+  if (startMoment?.isValid()) createdAt[Op.gte] = startMoment.toDate();
+  if (endMoment?.isValid()) createdAt[Op.lte] = endMoment.toDate();
+
+  return {
+    range,
+    startMoment,
+    endMoment,
+    whereClause: Object.keys(createdAt).length ? { createdAt } : {}
+  };
+};
+
+const getDurationMinutes = (outTime, expectedReturn) => {
+  if (!outTime || !expectedReturn) return 0;
+  const out = moment(outTime, "HH:mm:ss");
+  let ret = moment(expectedReturn, "HH:mm:ss");
+  if (!out.isValid() || !ret.isValid()) return 0;
+  if (ret.isBefore(out)) ret = ret.add(1, "day");
+  return Math.max(0, ret.diff(out, "minutes"));
+};
 
 exports.pending = async (req, res, next) => {
   try {
@@ -134,38 +179,60 @@ exports.approveWarden = async (req, res, next) => {
 
 exports.getStats = async (req, res, next) => {
   try {
-    const today = moment().startOf('day');
+    const hodUser = await User.findByPk(req.user.id, { include: "Staff" });
+    if (!hodUser?.Staff?.DepartmentDepartmentId) {
+      return res.status(403).json({ message: "HOD profile incomplete" });
+    }
 
-    const total = await GatePass.count();
-    const approved = await GatePass.count({ where: { status: "HOD Approved" } });
-    const rejected = await GatePass.count({ where: { status: "Rejected" } });
-    const pending = await GatePass.count({
-      where: { status: ["Pending", "Tutor Approved", "HOD Pending"] }
-    });
+    const deptId = hodUser.Staff.DepartmentDepartmentId;
+    const { range, startMoment, endMoment, whereClause } = getDateBoundsFromQuery(req.query);
 
-    const rawStats = await GatePass.findAll({
-      attributes: [
-        [sequelize.fn('date', sequelize.col('createdAt')), 'date'],
-        [sequelize.fn('count', sequelize.col('gatepass_id')), 'count']
-      ],
-      where: {
-        createdAt: {
-          [Op.gte]: moment().subtract(6, 'days').startOf('day').toDate()
+    const passes = await GatePass.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: Student,
+          where: { DepartmentDepartmentId: deptId },
+          attributes: ["student_id", "DepartmentDepartmentId"]
         }
-      },
-      group: [sequelize.fn('date', sequelize.col('createdAt'))],
-      order: [[sequelize.fn('date', sequelize.col('createdAt')), 'ASC']]
+      ]
     });
 
-    // Process to ensure all 7 days are present
-    const chartData = [];
-    for (let i = 6; i >= 0; i--) {
-      const dateStr = moment().subtract(i, 'days').format('YYYY-MM-DD');
-      const found = rawStats.find(s => s.get('date') === dateStr);
-      chartData.push({
-        date: moment(dateStr).format('MMM DD'), // Format for frontend
-        count: found ? parseInt(found.get('count')) : 0
-      });
+    const total = passes.length;
+    const approved = passes.filter(p => p.status === "HOD Approved" || p.status === "Completed").length;
+    const rejected = passes.filter(p => p.status === "Rejected").length;
+    const pending = passes.filter(p => ["Pending", "Tutor Approved", "HOD Pending"].includes(p.status)).length;
+
+    const countByDate = {};
+    passes.forEach((pass) => {
+      const dateKey = moment(pass.createdAt).format("YYYY-MM-DD");
+      countByDate[dateKey] = (countByDate[dateKey] || 0) + 1;
+    });
+
+    let chartData = [];
+
+    // For manageable ranges, fill missing days to show a proper timeline.
+    const canGenerateContinuous =
+      startMoment?.isValid() &&
+      endMoment?.isValid() &&
+      endMoment.diff(startMoment, "days") <= 120;
+
+    if (canGenerateContinuous) {
+      const days = endMoment.diff(startMoment, "days");
+      for (let i = 0; i <= days; i++) {
+        const dateStr = startMoment.clone().add(i, "days").format("YYYY-MM-DD");
+        chartData.push({
+          date: moment(dateStr).format("MMM DD"),
+          count: countByDate[dateStr] || 0
+        });
+      }
+    } else {
+      chartData = Object.entries(countByDate)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([dateStr, count]) => ({
+          date: moment(dateStr).format("MMM DD"),
+          count
+        }));
     }
 
     res.json({
@@ -173,7 +240,13 @@ exports.getStats = async (req, res, next) => {
       approved,
       rejected,
       pending,
-      chartData: chartData
+      chartData,
+      filters: {
+        department_id: deptId,
+        range,
+        start_date: startMoment?.isValid() ? startMoment.format("YYYY-MM-DD") : null,
+        end_date: endMoment?.isValid() ? endMoment.format("YYYY-MM-DD") : null
+      }
     });
   } catch (err) {
     next(err);
@@ -291,6 +364,7 @@ exports.getDepartmentStudents = async (req, res, next) => {
       year: s.year,
       category: s.category,
       parent_phone: s.parent_phone,
+      student_mobile_number: s.student_mobile_number,
       profile_pic: s.profile_pic,
       is_suspended: s.is_suspended,
       active: s.active
@@ -348,6 +422,308 @@ exports.bulkSuspend = async (req, res, next) => {
     await Student.update({ is_suspended: isSuspended }, { where: whereClause });
 
     res.json({ message: `Students ${isSuspended ? "suspended" : "restored"} successfully` });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getDepartmentStudentsWithHistory = async (req, res, next) => {
+  try {
+    const { year = "all", search = "" } = req.query;
+
+    const hodUser = await User.findByPk(req.user.id, { include: "Staff" });
+    if (!hodUser?.Staff?.DepartmentDepartmentId) {
+      return res.status(403).json({ message: "HOD profile incomplete" });
+    }
+
+    const deptId = hodUser.Staff.DepartmentDepartmentId;
+    const studentWhere = { DepartmentDepartmentId: deptId };
+    if (year !== "all" && !Number.isNaN(Number(year))) {
+      studentWhere.year = Number(year);
+    }
+
+    const students = await Student.findAll({
+      where: studentWhere,
+      include: [
+        { association: "User", attributes: ["user_id", "name", "email"] },
+        {
+          association: "AssignedStaff",
+          attributes: ["staff_id"],
+          include: [{ association: "User", attributes: ["user_id", "name", "email"] }],
+          required: false
+        }
+      ],
+      order: [["year", "ASC"], ["student_id", "ASC"]]
+    });
+
+    const studentIds = students.map((s) => s.student_id);
+    const allPasses = studentIds.length
+      ? await GatePass.findAll({
+        where: { StudentStudentId: studentIds },
+        attributes: ["gatepass_id", "StudentStudentId", "status", "createdAt", "out_time", "expected_return"]
+      })
+      : [];
+
+    const passStatsMap = {};
+    allPasses.forEach((pass) => {
+      const sid = pass.StudentStudentId;
+      if (!passStatsMap[sid]) {
+        passStatsMap[sid] = {
+          total: 0,
+          approved: 0,
+          rejected: 0,
+          pending: 0,
+          longestMinutes: 0,
+          lastAppliedAt: null
+        };
+      }
+
+      const stats = passStatsMap[sid];
+      stats.total += 1;
+      if (pass.status === "HOD Approved" || pass.status === "Completed") stats.approved += 1;
+      else if (pass.status === "Rejected") stats.rejected += 1;
+      else stats.pending += 1;
+
+      const durationMinutes = getDurationMinutes(pass.out_time, pass.expected_return);
+      if (durationMinutes > stats.longestMinutes) stats.longestMinutes = durationMinutes;
+
+      if (!stats.lastAppliedAt || moment(pass.createdAt).isAfter(stats.lastAppliedAt)) {
+        stats.lastAppliedAt = pass.createdAt;
+      }
+    });
+
+    const searchText = search.trim().toLowerCase();
+
+    const rows = students
+      .map((student) => {
+        const stats = passStatsMap[student.student_id] || {
+          total: 0,
+          approved: 0,
+          rejected: 0,
+          pending: 0,
+          longestMinutes: 0,
+          lastAppliedAt: null
+        };
+
+        return {
+          student_id: student.student_id,
+          year: student.year,
+          category: student.category,
+          parent_phone: student.parent_phone,
+          student_mobile_number: student.student_mobile_number,
+          profile_pic: student.profile_pic,
+          name: student.User?.name || "Unknown",
+          email: student.User?.email || "-",
+          tutor_name: student.AssignedStaff?.User?.name || "Not Assigned",
+          pass_stats: {
+            ...stats,
+            longestHours: Number((stats.longestMinutes / 60).toFixed(2)),
+            lastAppliedAt: stats.lastAppliedAt
+          }
+        };
+      })
+      .filter((row) => {
+        if (!searchText) return true;
+        return (
+          row.name.toLowerCase().includes(searchText) ||
+          row.email.toLowerCase().includes(searchText) ||
+          String(row.student_id).includes(searchText) ||
+          row.tutor_name.toLowerCase().includes(searchText)
+        );
+      });
+
+    const uniqueYears = [...new Set(students.map((s) => s.year).filter((y) => y !== null && y !== undefined))]
+      .sort((a, b) => a - b);
+
+    res.json({
+      department_id: deptId,
+      filters: { year, search },
+      years: uniqueYears,
+      total_students: rows.length,
+      students: rows
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getDepartmentInsights = async (req, res, next) => {
+  try {
+    const hodUser = await User.findByPk(req.user.id, { include: "Staff" });
+    if (!hodUser?.Staff?.DepartmentDepartmentId) {
+      return res.status(403).json({ message: "HOD profile incomplete" });
+    }
+
+    const deptId = hodUser.Staff.DepartmentDepartmentId;
+    const { range, startMoment, endMoment, whereClause } = getDateBoundsFromQuery(req.query);
+
+    const passes = await GatePass.findAll({
+      where: whereClause,
+      include: [
+        {
+          association: "Student",
+          where: { DepartmentDepartmentId: deptId },
+          include: [
+            { association: "User", attributes: ["user_id", "name", "email"] },
+            {
+              association: "AssignedStaff",
+              include: [{ association: "User", attributes: ["user_id", "name", "email"] }],
+              required: false
+            }
+          ]
+        }
+      ],
+      order: [["createdAt", "DESC"]]
+    });
+
+    const yearStatsMap = {};
+    const studentStatsMap = {};
+    const tutorStatsMap = {};
+    let hostellerRequests = 0;
+    let dayScholarRequests = 0;
+    let longestPass = null;
+    let longestPasses = [];
+
+    passes.forEach((pass) => {
+      const student = pass.Student;
+      const yearKey = String(student?.year ?? "Unknown");
+      const studentId = student?.student_id;
+      const studentName = student?.User?.name || `Student ${studentId}`;
+      const tutorName = student?.AssignedStaff?.User?.name || "Not Assigned";
+      const category = String(student?.category || "").toLowerCase();
+      if (category.includes("hostel")) hostellerRequests += 1;
+      else dayScholarRequests += 1;
+
+      if (!yearStatsMap[yearKey]) yearStatsMap[yearKey] = { year: yearKey, total: 0, approved: 0, rejected: 0, pending: 0 };
+      if (!studentStatsMap[studentId]) {
+        studentStatsMap[studentId] = {
+          student_id: studentId,
+          name: studentName,
+          email: student?.User?.email || "-",
+          year: student?.year,
+          tutor_name: tutorName,
+          total: 0,
+          approved: 0,
+          rejected: 0,
+          pending: 0,
+          profile_pic: student?.profile_pic || null,
+          max_duration_minutes: 0
+        };
+      }
+      if (!tutorStatsMap[tutorName]) tutorStatsMap[tutorName] = { tutor_name: tutorName, total: 0, approved: 0, rejected: 0, pending: 0 };
+
+      yearStatsMap[yearKey].total += 1;
+      studentStatsMap[studentId].total += 1;
+      tutorStatsMap[tutorName].total += 1;
+
+      const isApproved = pass.status === "HOD Approved" || pass.status === "Completed";
+      const isRejected = pass.status === "Rejected";
+
+      if (isApproved) {
+        yearStatsMap[yearKey].approved += 1;
+        studentStatsMap[studentId].approved += 1;
+        tutorStatsMap[tutorName].approved += 1;
+      } else if (isRejected) {
+        yearStatsMap[yearKey].rejected += 1;
+        studentStatsMap[studentId].rejected += 1;
+        tutorStatsMap[tutorName].rejected += 1;
+      } else {
+        yearStatsMap[yearKey].pending += 1;
+        studentStatsMap[studentId].pending += 1;
+        tutorStatsMap[tutorName].pending += 1;
+      }
+
+      const durationMinutes = getDurationMinutes(pass.out_time, pass.expected_return);
+      if (durationMinutes > studentStatsMap[studentId].max_duration_minutes) {
+        studentStatsMap[studentId].max_duration_minutes = durationMinutes;
+      }
+      if (!longestPass || durationMinutes > longestPass.duration_minutes) {
+        longestPass = {
+          gatepass_id: pass.gatepass_id,
+          student_id: studentId,
+          student_name: studentName,
+          reason: pass.reason,
+          out_time: pass.out_time,
+          expected_return: pass.expected_return,
+          duration_minutes: durationMinutes,
+          duration_hours: Number((durationMinutes / 60).toFixed(2)),
+          createdAt: pass.createdAt
+        };
+        longestPasses = [longestPass];
+      } else if (longestPass && durationMinutes === longestPass.duration_minutes) {
+        longestPasses.push({
+          gatepass_id: pass.gatepass_id,
+          student_id: studentId,
+          student_name: studentName,
+          reason: pass.reason,
+          out_time: pass.out_time,
+          expected_return: pass.expected_return,
+          duration_minutes: durationMinutes,
+          duration_hours: Number((durationMinutes / 60).toFixed(2)),
+          createdAt: pass.createdAt
+        });
+      }
+    });
+
+    const yearStats = Object.values(yearStatsMap).sort((a, b) => b.total - a.total);
+    const allStudentsRanked = Object.values(studentStatsMap).sort((a, b) => b.total - a.total);
+    const topStudents = allStudentsRanked.slice(0, 10);
+    const tutorBreakdown = Object.values(tutorStatsMap).sort((a, b) => b.total - a.total);
+    const topYear = yearStats[0] || null;
+    const topStudent = topStudents[0] || null;
+    const topTutor = tutorBreakdown[0] || null;
+
+    const topYearTied = topYear ? yearStats.filter((item) => item.total === topYear.total) : [];
+    const topStudentsTied = topStudent ? allStudentsRanked.filter((item) => item.total === topStudent.total) : [];
+    const topTutorsTied = topTutor ? tutorBreakdown.filter((item) => item.total === topTutor.total) : [];
+
+    const maxStudentDuration = allStudentsRanked.length
+      ? Math.max(...allStudentsRanked.map((item) => item.max_duration_minutes || 0))
+      : 0;
+
+    const longestStudentTies = allStudentsRanked
+      .filter((item) => (item.max_duration_minutes || 0) === maxStudentDuration && maxStudentDuration > 0)
+      .map((item) => ({
+        student_id: item.student_id,
+        student_name: item.name,
+        year: item.year,
+        tutor_name: item.tutor_name,
+        duration_minutes: item.max_duration_minutes,
+        duration_hours: Number((item.max_duration_minutes / 60).toFixed(2))
+      }));
+
+    const longestStudentTop = longestStudentTies[0] || longestPass;
+
+    const tutorApprovals = passes.filter((pass) => pass.status !== "Pending").length;
+    const wardenApprovals = passes.filter((pass) => String(pass.Student?.category || "").toLowerCase().includes("hostel")).length;
+
+    res.json({
+      filters: {
+        department_id: deptId,
+        range,
+        start_date: startMoment?.isValid() ? startMoment.format("YYYY-MM-DD") : null,
+        end_date: endMoment?.isValid() ? endMoment.format("YYYY-MM-DD") : null
+      },
+      totals: {
+        total_requests: passes.length,
+        unique_students: Object.keys(studentStatsMap).length,
+        top_year: topYear,
+        top_year_tied: topYearTied,
+        top_student: topStudent,
+        top_students_tied: topStudentsTied,
+        longest_pass: longestStudentTop,
+        longest_passes_tied: longestStudentTies.length ? longestStudentTies : longestPasses,
+        top_tutor: topTutor,
+        top_tutors_tied: topTutorsTied,
+        tutor_approvals: tutorApprovals,
+        warden_approvals: wardenApprovals,
+        hosteller_requests: hostellerRequests,
+        day_scholar_requests: dayScholarRequests
+      },
+      year_stats: yearStats,
+      top_students: topStudents,
+      tutor_breakdown: tutorBreakdown
+    });
   } catch (err) {
     next(err);
   }

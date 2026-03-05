@@ -39,6 +39,7 @@
   justify-content: center;
   font-size: 1.5rem;
   flex-shrink: 0;
+  animation: statIconPulse 2.2s ease-in-out infinite;
 }
 
 .stat-icon-circle.blue {
@@ -256,5 +257,17 @@
 
   50% {
     opacity: .5;
+  }
+}
+
+@keyframes statIconPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
   }
 }

@@ -18,7 +18,7 @@ const StudentSuspension = () => {
         try {
             setLoading(true);
             const token = localStorage.getItem("token");
-            const response = await axios.get("http://localhost:5000/api/hod/students", {
+            const response = await axios.get("http://localhost:5001/api/hod/students", {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setStudents(response.data);
@@ -36,7 +36,7 @@ const StudentSuspension = () => {
         try {
             setActionLoading(studentId);
             const token = localStorage.getItem("token");
-            const response = await axios.post(`http://localhost:5000/api/hod/student/${studentId}/suspend`, {}, {
+            const response = await axios.post(`http://localhost:5001/api/hod/student/${studentId}/suspend`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -73,7 +73,7 @@ const StudentSuspension = () => {
             setActionLoading("bulk");
             const token = localStorage.getItem("token");
 
-            await axios.post("http://localhost:5000/api/hod/students/bulk-suspend", {
+            await axios.post("http://localhost:5001/api/hod/students/bulk-suspend", {
                 action,
                 studentIds: targetIds
             }, {
@@ -226,7 +226,7 @@ const StudentSuspension = () => {
                                     <td style={{ padding: '1rem' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                             <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                {student.profile_pic ? <img src={`http://localhost:5000/uploads/${student.profile_pic}`} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : '👤'}
+                                                {student.profile_pic ? <img src={`http://localhost:5001/uploads/${student.profile_pic}`} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : '👤'}
                                             </div>
                                             <div>
                                                 <div style={{ fontWeight: '600' }}>{student.name}</div>
@@ -269,3 +269,4 @@ const StudentSuspension = () => {
 };
 
 export default StudentSuspension;
+

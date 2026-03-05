@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/navbar.css";
+import NotificationDropdown from "./NotificationDropdown";
 
 const Navbar = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const Navbar = ({ user, onLogout }) => {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const response = await axios.get("http://localhost:5000/api/notifications", {
+      const response = await axios.get("http://localhost:5001/api/notifications", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(Array.isArray(response.data) ? response.data : []);
@@ -34,7 +35,7 @@ const Navbar = ({ user, onLogout }) => {
       // Opening the menu - mark all as read
       try {
         const token = localStorage.getItem("token");
-        await axios.post("http://localhost:5000/api/notifications/mark-read", {}, {
+        await axios.post("http://localhost:5001/api/notifications/mark-read", {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -73,7 +74,7 @@ const Navbar = ({ user, onLogout }) => {
         </div>
 
         <div className="navbar-actions">
-          <div className="notification-wrapper" style={{ position: 'relative' }}>
+          <div className="notification-wrapper">
             <button
               className="btn-notification"
               onClick={handleNotificationClick}
@@ -81,63 +82,21 @@ const Navbar = ({ user, onLogout }) => {
               🔔
             </button>
             {unreadCount > 0 && (
-              <span className="badge-count" style={{
-                position: 'absolute',
-                top: '-5px',
-                right: '-5px',
-                background: 'red',
-                color: 'white',
-                borderRadius: '50%',
-                padding: '2px 6px',
-                fontSize: '10px',
-                fontWeight: 'bold'
-              }}>
+              <span className="badge-count">
                 {unreadCount}
               </span>
             )}
 
             {showNotificationMenu && (
-              <div className="notification-dropdown" style={{
-                position: 'absolute',
-                top: '100%',
-                right: '0',
-                backgroundColor: 'white',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-                zIndex: 1000,
-                width: '300px',
-                maxHeight: '400px',
-                overflowY: 'auto',
-                marginTop: '10px'
-              }}>
-                <div style={{ padding: '10px', borderBottom: '1px solid #eee', fontWeight: 'bold' }}>
-                  Notifications
-                </div>
-                {notifications.length === 0 ? (
-                  <div style={{ padding: '15px', textAlign: 'center', color: '#666' }}>
-                    No notifications
-                  </div>
-                ) : (
-                  notifications.map(note => (
-                    <div key={note.id} style={{
-                      padding: '10px',
-                      borderBottom: '1px solid #eee',
-                      backgroundColor: note.is_read ? 'white' : '#f0f7ff',
-                      fontSize: '13px'
-                    }}>
-                      <div style={{ marginBottom: '5px' }}>{note.message}</div>
-                      <div style={{ fontSize: '11px', color: '#888' }}>
-                        {new Date(note.createdAt).toLocaleString()}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
+              <NotificationDropdown
+                notifications={notifications}
+                onMarkRead={handleNotificationClick} // Re-using existing handler which marks as read
+                onClose={() => setShowNotificationMenu(false)}
+              />
             )}
           </div>
 
-          <div className="profile-wrapper" style={{ position: 'relative' }}>
+          <div className="profile-wrapper">
             <button
               className="btn-profile"
               onClick={handleProfileClick}
@@ -145,34 +104,14 @@ const Navbar = ({ user, onLogout }) => {
               👤
             </button>
             {showProfileMenu && (
-              <div className="profile-dropdown" style={{
-                position: 'absolute',
-                top: '100%',
-                right: '0',
-                backgroundColor: 'white',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-                zIndex: 1000,
-                minWidth: '150px',
-                marginTop: '10px'
-              }}>
-                <div style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
+              <div className="profile-dropdown">
+                <div className="profile-meta">
                   <strong>{user?.name}</strong>
-                  <div style={{ fontSize: '12px', color: '#666' }}>{user?.email}</div>
+                  <div className="profile-email">{user?.email}</div>
                 </div>
                 <button
                   onClick={handleLogout}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    padding: '10px',
-                    textAlign: 'left',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#d9534f'
-                  }}
+                  className="profile-logout-btn"
                 >
                   🚪 Logout
                 </button>
@@ -186,4 +125,5 @@ const Navbar = ({ user, onLogout }) => {
 };
 
 export default Navbar;
+
 

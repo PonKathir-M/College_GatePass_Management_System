@@ -15,6 +15,8 @@ router.post("/approve-warden/:id", auth, role(["hod"]), ctrl.approveWarden);
 
 // Statistics
 router.get("/stats", auth, role(["hod"]), ctrl.getStats);
+router.get("/insights", auth, role(["hod"]), ctrl.getDepartmentInsights);
+router.get("/students-history", auth, role(["hod"]), ctrl.getDepartmentStudentsWithHistory);
 
 // Student Suspension Management
 router.get("/students", auth, role(["hod"]), ctrl.getDepartmentStudents);

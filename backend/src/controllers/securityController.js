@@ -3,11 +3,38 @@ const { notifyUser, notifyParent, notifyHOD } = require("../services/notificatio
 
 exports.getApprovedPasses = async (req, res, next) => {
   try {
+    const { search } = req.query;
+    const { Op } = require("sequelize");
+
+    let studentWhere = {};
+    if (search) {
+      studentWhere = {
+        [Op.or]: [
+          { roll_no: { [Op.like]: `%${search}%` } },
+          // Note: searching by User.name requires nested association filtering which is tricky in Sequelize without 'required: true'
+          // For simplicity and performance, we'll filter by Roll No primarily or handle name filter in memory if result set is small, 
+          // OR use a more complex query. Let's try to include User model in where clause.
+          // Actually, standard way:
+          { '$User.name$': { [Op.like]: `%${search}%` } }
+        ]
+      };
+    }
+
     const passes = await GatePass.findAll({
-      where: { status: "HOD Approved" },
+      where: {
+        status: {
+          [Op.or]: ["HOD Approved", "Warden Approved"]
+        }
+      },
       include: [
         {
           model: Student,
+          where: search ? {
+            [Op.or]: [
+              { roll_no: { [Op.like]: `%${search}%` } },
+              { '$User.name$': { [Op.like]: `%${search}%` } }
+            ]
+          } : undefined,
           include: [
             { model: User, as: "User" }, // Student Name
             { model: Department, as: "Department" }, // Department Name
@@ -17,7 +44,8 @@ exports.getApprovedPasses = async (req, res, next) => {
               include: [{ model: User, as: "User" }] // Tutor Name
             }
           ]
-        }
+        },
+        { model: SecurityLog }
       ],
       order: [["createdAt", "DESC"]]
     });
@@ -67,7 +95,7 @@ exports.markStudentOut = async (req, res, next) => {
       return res.status(404).json({ message: "Gate pass not found" });
     }
 
-    if (pass.status !== "HOD Approved") {
+    if (pass.status !== "HOD Approved" && pass.status !== "Warden Approved") {
       return res.status(400).json({ message: "Only approved passes can be marked OUT" });
     }
 

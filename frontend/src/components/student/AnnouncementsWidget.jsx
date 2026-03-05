@@ -12,7 +12,7 @@ const AnnouncementsWidget = () => {
     const fetchAnnouncements = async () => {
         try {
             const token = localStorage.getItem("token");
-            const response = await axios.get("http://localhost:5000/api/student/announcements", {
+            const response = await axios.get("http://localhost:5001/api/student/announcements", {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAnnouncements(response.data);
@@ -100,3 +100,4 @@ const AnnouncementsWidget = () => {
 };
 
 export default AnnouncementsWidget;
+

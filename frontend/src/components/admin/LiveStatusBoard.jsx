@@ -10,16 +10,20 @@ const LiveStatusBoard = () => {
     });
     const [loading, setLoading] = useState(false);
 
+    const [error, setError] = useState(null);
+
     const fetchLiveStatus = async () => {
         try {
             setLoading(true);
+            setError(null);
             const token = localStorage.getItem("token");
-            const response = await axios.get("http://localhost:5000/api/admin/live-status", {
+            const response = await axios.get("http://localhost:5001/api/admin/live-status", {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setStats(response.data);
         } catch (err) {
             console.error("Error fetching live status:", err);
+            setError("Cannot connect to server for live updates.");
         } finally {
             setLoading(false);
         }
@@ -56,6 +60,12 @@ const LiveStatusBoard = () => {
             </div>
 
             <div className="live-status-board" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+
+                {error && (
+                    <div style={{ gridColumn: '1 / -1', padding: '10px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '8px', border: '1px solid #f87171', fontSize: '0.9rem' }}>
+                        ⚠️ {error}
+                    </div>
+                )}
 
                 <div className="status-card" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white', padding: '1rem', borderRadius: '16px', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'relative', zIndex: 1 }}>
@@ -99,3 +109,4 @@ const LiveStatusBoard = () => {
 };
 
 export default LiveStatusBoard;
+

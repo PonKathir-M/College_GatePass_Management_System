@@ -13,7 +13,7 @@ const RequestHistory = () => {
     const fetchHistory = async () => {
         try {
             const token = localStorage.getItem("token");
-            const response = await axios.get("http://localhost:5000/api/tutor/history", {
+            const response = await axios.get("http://localhost:5001/api/tutor/history", {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setHistory(Array.isArray(response.data) ? response.data : []);
@@ -76,3 +76,4 @@ const RequestHistory = () => {
 };
 
 export default RequestHistory;
+

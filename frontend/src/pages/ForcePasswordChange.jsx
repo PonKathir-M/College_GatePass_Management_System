@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import axios from "axios";
+import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.css"; // Reusing login styles
 
@@ -27,11 +27,9 @@ const ForcePasswordChange = () => {
         }
 
         try {
-            const token = localStorage.getItem("token");
-            await axios.post(
-                "http://localhost:5000/api/auth/change-password",
-                { currentPassword, newPassword },
-                { headers: { Authorization: `Bearer ${token}` } }
+            await api.post(
+                "/auth/change-password",
+                { currentPassword, newPassword }
             );
 
             // Update user in local storage to remove flag (hacky but works until refresh)

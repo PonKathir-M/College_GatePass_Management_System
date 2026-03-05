@@ -28,41 +28,9 @@ exports.login = async (req, res, next) => {
       user: {
         id: user.user_id,
         name: user.name,
-        role: user.role,
-        needs_password_change: user.needs_password_change // Include flag
+        role: user.role
       }
     });
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.changePassword = async (req, res, next) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
-    const userId = req.user.id;
-
-    const user = await User.findByPk(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Verify current password
-    const match = await bcrypt.compare(currentPassword, user.password);
-    if (!match) {
-      return res.status(400).json({ message: "Incorrect current password" });
-    }
-
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: "New password must be at least 6 characters" });
-    }
-
-    const hashed = await bcrypt.hash(newPassword, 10);
-    user.password = hashed;
-    user.needs_password_change = false; // Reset flag
-    await user.save();
-
-    res.json({ message: "Password changed successfully" });
   } catch (err) {
     next(err);
   }
@@ -97,7 +65,7 @@ exports.createInitialAdmin = async (req, res, next) => {
       active: true
     });
 
-    res.status(201).json({
+    res.status(201).json({ 
       message: "Admin user created successfully",
       user: {
         id: admin.user_id,

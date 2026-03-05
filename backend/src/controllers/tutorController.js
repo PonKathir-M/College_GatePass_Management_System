@@ -1,4 +1,4 @@
-const { GatePass, TutorApproval, Student, User, Staff, Announcement } = require("../models");
+const { GatePass, TutorApproval, Student, User, Staff } = require("../models");
 const { PASS_STATUS } = require("../config/constants");
 const { notifyUser, notifyParent, notifyHOD } = require("../services/notificationService");
 
@@ -65,10 +65,7 @@ exports.pendingRequests = async (req, res, next) => {
       include: [
         {
           association: "Student",
-          include: [
-            { association: "User" },
-            { association: "Department" }
-          ]
+          include: { association: "User" }
         }
       ],
       order: [["createdAt", "DESC"]]
@@ -312,13 +309,7 @@ exports.unassignStudent = async (req, res, next) => {
 exports.getApprovalHistory = async (req, res, next) => {
   try {
     const approvals = await TutorApproval.findAll({
-      include: {
-        association: "GatePass",
-        include: {
-          association: "Student",
-          include: "User"
-        }
-      },
+      include: "GatePass",
       order: [["createdAt", "DESC"]],
       limit: 50
     });
@@ -367,113 +358,13 @@ exports.getAssignedStudents = async (req, res, next) => {
         year: s.year,
         category: s.category,
         parent_phone: s.parent_phone,
+        student_mobile_number: s.student_mobile_number,
         department_id: s.DepartmentDepartmentId,
         assigned_to: user.name
       }))
     });
   } catch (err) {
     console.error("Error in getAssignedStudents:", err);
-    next(err);
-  }
-};
-
-exports.getStudentHistory = async (req, res, next) => {
-  try {
-    const { studentId } = req.params;
-
-    // Verify tutor belongs to same department
-    const user = await User.findByPk(req.user.id, { include: "Staff" });
-    if (!user || !user.Staff) return res.status(403).json({ message: "Unauthorized" });
-
-    const student = await Student.findOne({
-      where: { student_id: studentId },
-      include: ["User", "Department"]
-    });
-
-    if (!student) return res.status(404).json({ message: "Student not found" });
-
-    if (student.DepartmentDepartmentId !== user.Staff.DepartmentDepartmentId) {
-      return res.status(403).json({ message: "Student belongs to another department" });
-    }
-
-    const history = await GatePass.findAll({
-      where: { StudentStudentId: studentId },
-      order: [['createdAt', 'DESC']]
-    });
-
-    const stats = {
-      total: history.length,
-      approved: history.filter(p => p.status === 'HOD Approved' || p.status === 'Completed').length,
-      rejected: history.filter(p => p.status === 'Rejected').length
-    };
-
-    res.json({
-      student,
-      stats,
-      history
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.createAnnouncement = async (req, res, next) => {
-  try {
-    const { title, message, target_audience, priority } = req.body;
-    const user = await User.findByPk(req.user.id, { include: "Staff" });
-
-    if (!user || !user.Staff) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
-
-    const announcement = await Announcement.create({
-      title,
-      message,
-      target_audience,
-      priority,
-      StaffStaffId: user.Staff.staff_id,
-      DepartmentDepartmentId: user.Staff.DepartmentDepartmentId
-    });
-
-    res.json({ message: "Announcement posted successfully", announcement });
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.getAnnouncements = async (req, res, next) => {
-  try {
-    const user = await User.findByPk(req.user.id, { include: "Staff" });
-    if (!user || !user.Staff) return res.status(403).json({ message: "Unauthorized" });
-
-    const announcements = await Announcement.findAll({
-      where: { StaffStaffId: user.Staff.staff_id },
-      order: [["createdAt", "DESC"]]
-    });
-
-    res.json(announcements);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.deleteAnnouncement = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const user = await User.findByPk(req.user.id, { include: "Staff" });
-    if (!user || !user.Staff) return res.status(403).json({ message: "Unauthorized" });
-
-    const announcement = await Announcement.findOne({
-      where: { announcement_id: id, StaffStaffId: user.Staff.staff_id }
-    });
-
-    if (!announcement) {
-      return res.status(404).json({ message: "Announcement not found" });
-    }
-
-    await announcement.destroy();
-    res.json({ message: "Announcement deleted successfully" });
-  } catch (err) {
     next(err);
   }
 };

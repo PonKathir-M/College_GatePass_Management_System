@@ -3,7 +3,6 @@ import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
 import Navbar from "../common/Navbar";
 import Sidebar from "../common/Sidebar";
-import StudentHoverPopup from "../common/StudentHoverPopup";
 import "../styles/security-dashboard.css";
 
 const Dashboard = () => {
@@ -15,7 +14,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [hoveredPass, setHoveredPass] = useState(null);
 
   // Filters
   const [deptFilter, setDeptFilter] = useState("all");
@@ -33,9 +31,9 @@ const Dashboard = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [passesRes, logsRes, historyRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/security/approved-passes", { headers }),
-        axios.get("http://localhost:5000/api/security/logs", { headers }),
-        axios.get("http://localhost:5000/api/security/history", { headers })
+        axios.get("http://localhost:5001/api/security/approved-passes", { headers }),
+        axios.get("http://localhost:5001/api/security/logs", { headers }),
+        axios.get("http://localhost:5001/api/security/history", { headers })
       ]);
 
       setActivePasses(passesRes.data);
@@ -52,7 +50,7 @@ const Dashboard = () => {
   const handleMarkOut = async (gatepass_id) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:5000/api/security/mark-out", { gatepass_id }, {
+      await axios.post("http://localhost:5001/api/security/mark-out", { gatepass_id }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSuccess("Student marked OUT");
@@ -67,7 +65,7 @@ const Dashboard = () => {
   const handleMarkIn = async (gatepass_id) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:5000/api/security/mark-in", { gatepass_id }, {
+      await axios.post("http://localhost:5001/api/security/mark-in", { gatepass_id }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSuccess("Student marked IN");
@@ -86,6 +84,20 @@ const Dashboard = () => {
     }
     const today = new Date().toLocaleDateString();
     return `${today} ${timeStr}`;
+  };
+
+  const formatDuration = (startTime, endTime) => {
+    if (!startTime || !endTime) return "N/A";
+
+    const diffMs = new Date(endTime) - new Date(startTime);
+    if (!Number.isFinite(diffMs) || diffMs < 0) return "N/A";
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${hours}h ${minutes}m ${seconds}s`;
   };
 
   // Filter Logic
@@ -173,31 +185,22 @@ const Dashboard = () => {
               {loading ? <div className="loading">Loading...</div> : (
                 <div className="passes-grid">
                   {filteredPasses.length === 0 ? <p>No active passes match filters</p> : filteredPasses.map((pass) => (
-                    <div key={pass.gatepass_id} className="pass-card large-view">
-                      <div
-                        className="pass-image-container"
-                        onMouseEnter={() => setHoveredPass(pass)}
-                        onMouseLeave={() => setHoveredPass(null)}
-                      >
-                        {pass.Student?.profile_pic ? (
-                          <img
-                            src={`http://localhost:5000/uploads/${pass.Student.profile_pic}`}
-                            alt={pass.Student?.User?.name}
-                            className="student-large-img"
-                            onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentNode.classList.add('no-image'); }}
-                          />
-                        ) : (
-                          <div className="no-image-placeholder">👤</div>
-                        )}
-                        <div className="pass-overlay-info">
-                          <h3>{pass.Student?.User?.name}</h3>
-                          <span className="pass-id-badge">{pass.gatepass_id}</span>
-                        </div>
+                    <div key={pass.gatepass_id} className="pass-card">
+                      <div className="pass-header">
+                        <h3>{pass.Student?.User?.name}</h3>
+                        <span className="pass-id">{pass.gatepass_id}</span>
                       </div>
-
-                      <div className="pass-actions-compact">
-                        <button className="btn btn-mark-out" onClick={() => handleMarkOut(pass.gatepass_id)}>🚪 OUT</button>
-                        <button className="btn btn-mark-in" onClick={() => handleMarkIn(pass.gatepass_id)}>✅ IN</button>
+                      <div className="pass-details">
+                        <p>🎓 <strong>{pass.Student?.Department?.department_name}</strong> - {pass.Student?.year} Yr</p>
+                        <p>👨‍🏫 Tutor: <strong>{pass.Student?.AssignedStaff?.User?.name || "N/A"}</strong></p>
+                        <p>🏠 Category: <span className={`badge ${pass.Student?.category === 'hosteller' ? 'badge-warning' : 'badge-info'}`}>{pass.Student?.category}</span></p>
+                        <hr style={{ margin: '10px 0', border: '0', borderTop: '1px solid #eee' }} />
+                        <p>🕐 Return By: <strong>{formatTime(pass.expected_return)}</strong></p>
+                        <p>📝 Reason: <strong>{pass.reason}</strong></p>
+                      </div>
+                      <div className="pass-actions">
+                        <button className="btn btn-mark-out" onClick={() => handleMarkOut(pass.gatepass_id)}>🚪 Mark OUT</button>
+                        <button className="btn btn-mark-in" onClick={() => handleMarkIn(pass.gatepass_id)}>✅ Mark IN</button>
                       </div>
                     </div>
                   ))}
@@ -283,7 +286,7 @@ const Dashboard = () => {
                         </td>
                         <td>
                           {pass.SecurityLog?.actual_in && pass.SecurityLog?.actual_out ?
-                            Math.round((new Date(pass.SecurityLog.actual_in) - new Date(pass.SecurityLog.actual_out)) / 60000) + " mins"
+                            formatDuration(pass.SecurityLog.actual_out, pass.SecurityLog.actual_in)
                             : "N/A"
                           }
                         </td>
@@ -296,19 +299,12 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-      <StudentHoverPopup
-        student={hoveredPass?.Student}
-        extraInfo={hoveredPass ? [
-          { label: "Reason", value: hoveredPass.reason },
-          { label: "Return By", value: formatTime(hoveredPass.expected_return), highlight: true },
-          { label: "Tutor", value: hoveredPass.Student?.AssignedStaff?.User?.name || "N/A" }
-        ] : []}
-      />
     </div>
   );
 };
 
 export default Dashboard;
+
 
 
 

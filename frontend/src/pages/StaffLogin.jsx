@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 import "../styles/login.css"; // Using the central login styles
 
@@ -25,7 +25,7 @@ const StaffLogin = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", {
+      const response = await api.post("/auth/login", {
         email,
         password
       });

@@ -7,5 +7,6 @@ exports.createStudentSchema = Joi.object({
   year: Joi.number().required(),
   category: Joi.string().valid("Hosteller", "Day Scholar").required(),
   parent_phone: Joi.string().required(),
+  student_mobile_number: Joi.string().required(),
   department_id: Joi.number().required()
 });

@@ -1,4 +1,4 @@
-const { User, Department, Staff, Student, GatePass, Notification } = require("../models");
+const { User, Department, Staff, Student, GatePass, Notification, SecurityLog } = require("../models");
 const bcrypt = require("bcryptjs");
 const { Sequelize, Op } = require("sequelize");
 const fs = require('fs');
@@ -296,7 +296,7 @@ exports.createStudent = async (req, res, next) => {
   try {
     console.log("Create Student Payload:", req.body);
     console.log("Create Student File:", req.file);
-    const { name, email, password, year, category, parent_phone, department_id } = req.body;
+    const { name, email, password, year, category, parent_phone, student_mobile_number, department_id } = req.body;
 
     const missingFields = [];
     if (!name) missingFields.push("name");
@@ -305,6 +305,7 @@ exports.createStudent = async (req, res, next) => {
     if (!year) missingFields.push("year");
     if (!category) missingFields.push("category");
     if (!parent_phone) missingFields.push("parent_phone");
+    if (!student_mobile_number) missingFields.push("student_mobile_number");
     if (!department_id) missingFields.push("department_id");
 
     if (missingFields.length > 0) {
@@ -325,6 +326,7 @@ exports.createStudent = async (req, res, next) => {
       year,
       category,
       parent_phone,
+      student_mobile_number,
       UserUserId: user.user_id,
       DepartmentDepartmentId: department_id
     };
@@ -362,7 +364,7 @@ exports.uploadStudentCSV = async (req, res, next) => {
         for (const row of students) {
           try {
             // Validate required fields
-            const requiredFields = ['name', 'email', 'year', 'category', 'parent_phone', 'department_name'];
+            const requiredFields = ['name', 'email', 'year', 'category', 'parent_phone', 'student_mobile_number', 'department_name'];
             const missing = requiredFields.filter(field => !row[field]);
 
             if (missing.length > 0) {
@@ -403,6 +405,7 @@ exports.uploadStudentCSV = async (req, res, next) => {
               year: parseInt(row.year),
               category: row.category,
               parent_phone: row.parent_phone,
+              student_mobile_number: row.student_mobile_number,
               UserUserId: user.user_id,
               DepartmentDepartmentId: department.department_id
             });
@@ -480,7 +483,8 @@ exports.updateStudent = async (req, res, next) => {
     const updateData = {
       year: req.body.year || student.year,
       category: req.body.category || student.category,
-      parent_phone: req.body.parent_phone || student.parent_phone
+      parent_phone: req.body.parent_phone || student.parent_phone,
+      student_mobile_number: req.body.student_mobile_number || student.student_mobile_number
     };
 
     if (req.file) {
@@ -813,7 +817,16 @@ exports.getAdvancedStats = async (req, res, next) => {
     // Include Filters
     const studentWhere = {};
     if (departmentId && departmentId !== "all") studentWhere.DepartmentDepartmentId = departmentId;
-    if (category && category !== "all") studentWhere.category = category;
+    if (category && category !== "all") {
+      const normalized = String(category).trim().toLowerCase();
+      const categoryMap = {
+        "day scholar": "day-scholar",
+        "dayscholar": "day-scholar",
+        "day-scholar": "day-scholar",
+        "hosteller": "hosteller"
+      };
+      studentWhere.category = categoryMap[normalized] || normalized;
+    }
 
     const passes = await GatePass.findAll({
       where,

@@ -21,7 +21,7 @@ const Profile = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       // 1. Fetch History for Stats & Chart
-      const historyRes = await axios.get("http://localhost:5000/api/student/gatepass", { headers });
+      const historyRes = await axios.get("http://localhost:5001/api/student/gatepass", { headers });
       const passes = historyRes.data || [];
 
       // Calculate Stats
@@ -52,7 +52,7 @@ const Profile = () => {
 
       // 2. Fetch Profile Details
       try {
-        const profileRes = await axios.get("http://localhost:5000/api/student/profile", { headers });
+        const profileRes = await axios.get("http://localhost:5001/api/student/profile", { headers });
         const sData = profileRes.data.student || {};
         const uData = profileRes.data.user || {};
 
@@ -64,7 +64,8 @@ const Profile = () => {
           department: sData.Department?.department_name || "Unknown",
           year: sData.year,
           category: sData.category || "Student",
-          parent_phone: sData.parent_phone
+          parent_phone: sData.parent_phone,
+          student_mobile_number: sData.student_mobile_number
         });
       } catch (e) {
         setProfile({
@@ -192,3 +193,4 @@ const Profile = () => {
 };
 
 export default Profile;
+

@@ -19,7 +19,7 @@ const TrackingTab = () => {
     const fetchTrackingData = async () => {
         try {
             const token = localStorage.getItem("token");
-            const response = await axios.get("http://localhost:5000/api/hod/tracking", {
+            const response = await axios.get("http://localhost:5001/api/hod/tracking", {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setData(response.data);
@@ -62,7 +62,7 @@ const TrackingTab = () => {
                                     <div className="student-profile">
                                         <div className="avatar-small">
                                             {pass.Student?.profile_pic ?
-                                                <img src={`http://localhost:5000/uploads/${pass.Student.profile_pic}`} alt="" /> :
+                                                <img src={`http://localhost:5001/uploads/${pass.Student.profile_pic}`} alt="" /> :
                                                 '👤'
                                             }
                                         </div>
@@ -106,7 +106,7 @@ const TrackingTab = () => {
                                     <div className="student-profile">
                                         <div className="avatar-small">
                                             {log.GatePass?.Student?.profile_pic ?
-                                                <img src={`http://localhost:5000/uploads/${log.GatePass.Student.profile_pic}`} alt="" /> :
+                                                <img src={`http://localhost:5001/uploads/${log.GatePass.Student.profile_pic}`} alt="" /> :
                                                 '👤'
                                             }
                                         </div>
@@ -154,7 +154,7 @@ const TrackingTab = () => {
                                     <div className="student-profile">
                                         <div className="avatar-small">
                                             {log.GatePass?.Student?.profile_pic ?
-                                                <img src={`http://localhost:5000/uploads/${log.GatePass.Student.profile_pic}`} alt="" /> :
+                                                <img src={`http://localhost:5001/uploads/${log.GatePass.Student.profile_pic}`} alt="" /> :
                                                 '👤'
                                             }
                                         </div>
@@ -184,3 +184,4 @@ const TrackingTab = () => {
 };
 
 export default TrackingTab;
+
