@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     StyleSheet,
     View,
@@ -41,13 +41,13 @@ const DashboardScreen = ({ navigation }) => {
         fetchPasses();
     }, [fetchPasses]);
 
-    const departmentOptions = ['ALL', ...new Set(
+    const departmentOptions = useMemo(() => ['ALL', ...new Set(
         passes
             .map((pass) => pass.Student?.Department?.dept_name)
             .filter(Boolean)
-    )];
+    )], [passes]);
 
-    const yearOptions = ['ALL', ...new Set(
+    const yearOptions = useMemo(() => ['ALL', ...new Set(
         passes
             .map((pass) => pass.Student?.year)
             .filter((year) => year !== null && year !== undefined)
@@ -56,7 +56,7 @@ const DashboardScreen = ({ navigation }) => {
         if (a === 'ALL') return -1;
         if (b === 'ALL') return 1;
         return Number(a) - Number(b);
-    });
+    }), [passes]);
 
     useEffect(() => {
         if (!departmentOptions.includes(selectedDepartment)) {

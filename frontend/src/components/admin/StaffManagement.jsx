@@ -4,7 +4,7 @@ import "../styles/management.css";
 
 const StaffManagement = () => {
   const [staffList, setStaffList] = useState([]);
-  const [assignedStudentsMap, setAssignedStudentsMap] = useState({});
+  const [totalDeptStudentsMap, setTotalDeptStudentsMap] = useState({});
   const [departments, setDepartments] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -59,52 +59,37 @@ const StaffManagement = () => {
   const fetchStaff = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:5001/api/admin/staff", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      const token = localStorage.getItem("token");
+      
+      // Fetch staff and students simultaneously
+      const [staffRes, studentRes] = await Promise.all([
+        axios.get("http://localhost:5001/api/admin/staff", {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get("http://localhost:5001/api/admin/student", {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+      
+      setStaffList(staffRes.data);
+      
+      // Calculate total students per department
+      const allStudents = studentRes.data;
+      const deptCounts = {};
+      allStudents.forEach(stu => {
+        const dId = stu.Student?.DepartmentDepartmentId;
+        if(dId) {
+          deptCounts[dId] = (deptCounts[dId] || 0) + 1;
+        }
       });
-      setStaffList(response.data);
+      setTotalDeptStudentsMap(deptCounts);
+      
       setError("");
-
-      // Fetch assigned students for each staff member
-      fetchAssignedStudentsForAllStaff(response.data);
     } catch (err) {
-      setError("Failed to load staff list");
+      setError("Failed to load staff or student lists");
       console.error(err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchAssignedStudentsForAllStaff = async (staff) => {
-    try {
-      const token = localStorage.getItem("token");
-      const studentMap = {};
-
-      // For each staff member, fetch their assigned students
-      for (const member of staff) {
-        try {
-          // We can use the students endpoint with a filter or create a new one
-          // For now, we'll fetch all students and filter by assignment
-          const response = await axios.get(
-            "http://localhost:5001/api/tutor/students",
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-
-          // Count students assigned to this staff
-          const assignedCount = response.data.filter(
-            s => s.AssignedStaffStaffId === member.Staff?.staff_id
-          ).length;
-
-          studentMap[member.Staff?.staff_id || member.user_id] = assignedCount;
-        } catch (err) {
-          console.error(`Error fetching students for staff ${member.name}:`, err);
-          studentMap[member.Staff?.staff_id || member.user_id] = 0;
-        }
-      }
-
-      setAssignedStudentsMap(studentMap);
-    } catch (err) {
-      console.error("Error fetching assigned students:", err);
     }
   };
 
@@ -114,6 +99,37 @@ const StaffManagement = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await axios.post("http://localhost:5001/api/admin/staff/upload", uploadData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      setSuccessMessage(`Upload successful! Added ${res.data.summary.success} users. Failed: ${res.data.summary.failed}.`);
+      if (res.data.summary.errors && res.data.summary.errors.length > 0) {
+        console.warn("Upload errors:", res.data.summary.errors);
+        setError(`Completed with ${res.data.summary.failed} errors. Check console for details.`);
+      }
+      fetchStaff();
+      setTimeout(() => setSuccessMessage(""), 5000);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error uploading file");
+    } finally {
+      setLoading(false);
+      e.target.value = null;
+    }
   };
 
   const handleAddStaff = async (e) => {
@@ -220,12 +236,28 @@ const StaffManagement = () => {
     <div className="management-container">
       <div className="management-header">
         <h2>👨‍🏫 Staff Management</h2>
-        <button
-          className="btn btn-primary"
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? "Cancel" : "+ Add Staff"}
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input 
+            type="file" 
+            id="staff-upload" 
+            style={{ display: 'none' }} 
+            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
+            onChange={handleFileUpload} 
+          />
+          <button 
+            className="btn btn-secondary" 
+            onClick={() => document.getElementById('staff-upload').click()}
+            style={{ backgroundColor: '#10B981', color: 'white' }}
+          >
+            📤 Upload Excel/CSV
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowForm(!showForm)}
+          >
+            {showForm ? "Cancel" : "+ Add Staff"}
+          </button>
+        </div>
       </div>
 
       <div className="filters-bar">
@@ -376,7 +408,7 @@ const StaffManagement = () => {
                 <th>Email</th>
                 <th>Role</th>
                 <th>Department</th>
-                <th>Assigned Students</th>
+                <th>Dept Students</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -399,7 +431,7 @@ const StaffManagement = () => {
                     <td>{staff.Staff?.Department?.department_name || "N/A"}</td>
                     <td>
                       <span className="badge badge-info">
-                        {assignedStudentsMap[staff.Staff?.staff_id] || 0} students
+                        {totalDeptStudentsMap[staff.Staff?.DepartmentDepartmentId] || 0} students
                       </span>
                     </td>
                     <td>

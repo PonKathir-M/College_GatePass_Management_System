@@ -11,6 +11,7 @@ const errorHandler = require("./src/middleware/errorHandler");
 const { seedDatabase } = require("./src/services/seedService");
 
 const app = express();
+const port = Number(process.env.PORT) || 5001;
 
 app.use(cors());
 app.use(express.json());
@@ -55,8 +56,23 @@ const runMigrations = async () => {
 
 runMigrations().then((success) => {
   if (success) {
-    app.listen(process.env.PORT, () => {
-      console.log(`Server running on port ${process.env.PORT}`);
+    const server = app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
+
+    server.on("error", (err) => {
+      if (err.code === "EADDRINUSE") {
+        console.error(
+          `Port ${port} is already in use. Another backend instance may already be running.`
+        );
+        console.error(
+          `Stop the process using port ${port} or change PORT in backend/.env, then try again.`
+        );
+        process.exit(1);
+      }
+
+      console.error("Server startup error:", err);
+      process.exit(1);
     });
   }
 });

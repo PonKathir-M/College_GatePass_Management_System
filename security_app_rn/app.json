@@ -28,9 +28,11 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiBaseUrl": "http://10.196.201.93:5001/api",
-      "imageBaseUrl": "http://10.196.201.93:5001",
       "backendPort": 5001
     }
   }
 }
+
+
+
+ 

@@ -24,7 +24,12 @@ exports.createDepartment = async (req, res, next) => {
 
 exports.getDepartments = async (req, res, next) => {
   try {
-    const depts = await Department.findAll({ include: "Staffs" });
+    const depts = await Department.findAll({ 
+      include: [
+        { association: "Staffs" },
+        { association: "Students", attributes: ["student_id"] }
+      ] 
+    });
     res.json(depts);
   } catch (err) {
     next(err);

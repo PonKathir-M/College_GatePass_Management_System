@@ -18,7 +18,7 @@ import { Lock, Mail, ShieldCheck } from 'lucide-react-native';
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { login, isLoading } = useAuth();
+    const { login, isLoading, authError } = useAuth();
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -28,7 +28,7 @@ const LoginScreen = () => {
 
         const success = await login(email, password);
         if (!success) {
-            Alert.alert('Login Failed', 'Please check your credentials and try again.');
+            Alert.alert('Login Failed', authError || 'Please check your credentials and try again.');
         }
     };
 

@@ -90,6 +90,37 @@ const StudentManagement = () => {
     }));
   };
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await axios.post("http://localhost:5001/api/admin/student/upload", uploadData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      setSuccessMessage(`Upload successful! Added ${res.data.summary.success} students. Failed: ${res.data.summary.failed}.`);
+      if (res.data.summary.errors && res.data.summary.errors.length > 0) {
+        console.warn("Upload errors:", res.data.summary.errors);
+        setError(`Completed with ${res.data.summary.failed} errors. Check console for details.`);
+      }
+      fetchStudents();
+      setTimeout(() => setSuccessMessage(""), 5000);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error uploading file");
+    } finally {
+      setLoading(false);
+      e.target.value = null;
+    }
+  };
+
   const handleAddStudent = async (e) => {
     e.preventDefault();
 
@@ -199,12 +230,28 @@ const StudentManagement = () => {
     <div className="management-container">
       <div className="management-header">
         <h2>👨‍🎓 Student Management</h2>
-        <button
-          className="btn btn-primary"
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? "Cancel" : "+ Add Student"}
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input 
+            type="file" 
+            id="student-upload" 
+            style={{ display: 'none' }} 
+            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
+            onChange={handleFileUpload} 
+          />
+          <button 
+            className="btn btn-secondary" 
+            onClick={() => document.getElementById('student-upload').click()}
+            style={{ backgroundColor: '#10B981', color: 'white' }}
+          >
+            📤 Upload Excel/CSV
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowForm(!showForm)}
+          >
+            {showForm ? "Cancel" : "+ Add Student"}
+          </button>
+        </div>
       </div>
 
       <div className="filters-bar">
