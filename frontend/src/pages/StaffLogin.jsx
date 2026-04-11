@@ -1,8 +1,8 @@
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
-import "../styles/login.css"; // Using the central login styles
+import { loginUser } from "../services/authService";
+import "../styles/staff-login.css";
 
 const StaffLogin = () => {
   const { login } = useContext(AuthContext);
@@ -11,168 +11,81 @@ const StaffLogin = () => {
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    if (!email || !password) {
-      setError("Please enter both email and password");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await api.post("/auth/login", {
-        email,
-        password
-      });
-
+      const response = await loginUser({ email, password });
       const { token, user } = response.data;
+      const role = String(user.role || "").toLowerCase();
 
-      // Verify that the user is staff/hod/warden/security/admin
-      const allowedRoles = ["staff", "hod", "warden", "security", "admin"];
-      const userRoleLower = user.role.toLowerCase();
-
-      if (!allowedRoles.includes(userRoleLower)) {
-        setError("Access denied. Invalid role for staff portal.");
+      if (!["staff", "hod", "warden", "security", "admin"].includes(role)) {
+        setError("This page is for staff roles only.");
         setLoading(false);
         return;
       }
 
-      login({
-        token,
-        user: { ...user, role: userRoleLower }
-      });
+      login({ token, user: { ...user, role } });
 
-      // Redirect based on role
-      switch (userRoleLower) {
-        case "admin": navigate("/admin"); break;
-        case "hod": navigate("/hod"); break;
-        case "warden": navigate("/warden"); break;
-        case "security": navigate("/security"); break;
-        default: navigate("/tutor");
-      }
+      if (role === "admin") navigate("/admin");
+      else if (role === "hod") navigate("/hod");
+      else if (role === "warden") navigate("/warden");
+      else if (role === "security") navigate("/security");
+      else navigate("/tutor");
     } catch (err) {
-      console.error("Login error:", err);
-      setError(err.response?.data?.message || "Invalid email or password. Please try again.");
+      setError(err.response?.data?.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login">
-      <div className="login-background">
-        <div className="bg-shape bg-shape-1"></div>
-        <div className="bg-shape bg-shape-2"></div>
-        <div className="bg-shape bg-shape-3"></div>
+    <div className="role-auth-page">
+      <div className="role-auth-header">
+        <h1>GATEPASS MANAGEMENT SYSTEM</h1>
+        <div className="role-auth-logo">GPMS</div>
       </div>
 
-      <div className="login-content">
-        <div className="login-header">
-          <h1>👨‍🏫 Staff Portal</h1>
-          <p>College Gate Pass System</p>
-        </div>
+      <div className="role-auth-body">
+        <div className="role-auth-card">
+          <h2>Staff Sign In</h2>
 
-        {error && (
-          <div style={{
-            backgroundColor: 'rgba(254, 226, 226, 0.9)',
-            color: '#991b1b',
-            padding: '1rem',
-            borderRadius: '12px',
-            marginBottom: '1rem',
-            backdropFilter: 'blur(4px)',
-            border: '1px solid #fecaca'
-          }}>
-            ❌ {error}
-          </div>
-        )}
+          {error && <div className="role-error">{error}</div>}
 
-        <form onSubmit={handleLogin}>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.9)', fontWeight: '500' }}>
-              📧 Email Address
-            </label>
+          <form onSubmit={handleLogin}>
             <input
+              className="role-input"
               type="email"
+              placeholder="Username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your college email"
               disabled={loading}
               required
-              style={{ width: '100%', padding: '1rem', borderRadius: '12px' }}
             />
-          </div>
 
-          <div style={{ marginBottom: '2rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.9)', fontWeight: '500' }}>
-              🔐 Password
-            </label>
-            <div style={{ position: 'relative' }}>
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                disabled={loading}
-                required
-                style={{ width: '100%', padding: '1rem', borderRadius: '12px' }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '1rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '1.2rem',
-                  padding: 0
-                }}
-              >
-                {showPassword ? "👁️" : "👁️‍🗨️"}
-              </button>
-            </div>
-          </div>
+            <input
+              className="role-input"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              required
+            />
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '1rem',
-              borderRadius: '12px',
-              color: 'white',
-              fontWeight: '600',
-              fontSize: '1.1rem',
-              cursor: loading ? 'wait' : 'pointer'
-            }}
-          >
-            {loading ? "Logging in..." : "🔓 Sign In"}
-          </button>
+            <button className="role-submit" type="submit" disabled={loading}>
+              {loading ? "Signing In..." : "Sign In"}
+            </button>
+          </form>
 
-          <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-            <a
-              href="/"
-              style={{
-                color: 'rgba(255,255,255,0.7)',
-                textDecoration: 'none',
-                fontSize: '0.9rem',
-                transition: 'color 0.2s'
-              }}
-              onMouseOver={(e) => e.target.style.color = 'white'}
-              onMouseOut={(e) => e.target.style.color = 'rgba(255,255,255,0.7)'}
-            >
-              ← Back to Main Login
-            </a>
+          <div className="role-footer">
+            <span>Thank you.</span>
+            <a href="/">Back to website</a>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

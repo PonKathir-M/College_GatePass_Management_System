@@ -1,33 +1,31 @@
 const { PASS_STATUS } = require("../config/constants");
 const { isSunday, isHoliday } = require("../utils/helpers");
-
-const normalizeCategory = (studentCategory) =>
-  (studentCategory || "").toString().trim().toLowerCase();
+const { isHosteller } = require("../utils/studentCategory");
 
 exports.getInitialStatus = (studentCategory) => {
-  const normalizedCategory = normalizeCategory(studentCategory);
   const now = new Date();
   const hour = now.getHours();
   const minute = now.getMinutes();
   const timeInMinutes = hour * 60 + minute;
   const morningLimit = 9 * 60 + 15; // 9:15 AM
   const eveningLimit = 17 * 60 + 15; // 5:15 PM
+  const hosteller = isHosteller(studentCategory);
 
   // Hosteller cannot apply after 5:15 PM
-  if (normalizedCategory === "hosteller" && timeInMinutes >= eveningLimit) {
+  if (hosteller && timeInMinutes >= eveningLimit) {
     return "BLOCKED";
   }
 
   // Sunday/holiday logic
   if (isSunday() || isHoliday(now)) {
-    if (normalizedCategory === "hosteller") {
+    if (hosteller) {
       return "Warden Pending";
     }
     return "HOD Pending";
   }
 
   // Hosteller early morning
-  if (normalizedCategory === "hosteller" && timeInMinutes < morningLimit) {
+  if (hosteller && timeInMinutes < morningLimit) {
     return "Warden Pending";
   }
 
@@ -36,20 +34,20 @@ exports.getInitialStatus = (studentCategory) => {
 };
 
 exports.canApplyGatePass = (studentCategory) => {
-  const normalizedCategory = normalizeCategory(studentCategory);
   const now = new Date();
   const hour = now.getHours();
   const minute = now.getMinutes();
   const timeInMinutes = hour * 60 + minute;
   const eveningLimit = 17 * 60 + 15; // 5:15 PM
+  const hosteller = isHosteller(studentCategory);
 
   // Day scholars cannot apply on holidays/Sundays
-  if (normalizedCategory !== "hosteller" && (isSunday() || isHoliday(now))) {
+  if (!hosteller && (isSunday() || isHoliday(now))) {
     return false;
   }
 
   // Hostellers cannot apply after 5:15 PM
-  if (normalizedCategory === "hosteller" && timeInMinutes >= eveningLimit) {
+  if (hosteller && timeInMinutes >= eveningLimit) {
     return false;
   }
 
@@ -57,13 +55,13 @@ exports.canApplyGatePass = (studentCategory) => {
 };
 
 exports.getNextApprover = (status, studentCategory, isHolidayFlag = false) => {
-  const normalizedCategory = normalizeCategory(studentCategory);
+  const hosteller = isHosteller(studentCategory);
 
   if (isHolidayFlag) {
-    if (normalizedCategory === "hosteller" && status === "Warden Pending") {
+    if (hosteller && status === "Warden Pending") {
       return "HOD";
     }
-    if (normalizedCategory !== "hosteller" && status === "HOD Pending") {
+    if (!hosteller && status === "HOD Pending") {
       return "HOD";
     }
   }

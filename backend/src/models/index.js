@@ -9,6 +9,7 @@ const TutorApproval = require("./TutorApproval");
 const WardenApproval = require("./WardenApproval");
 const SecurityLog = require("./SecurityLog");
 const Notification = require("./Notification");
+const Announcement = require("./Announcement");
 
 /* Associations */
 
@@ -55,5 +56,6 @@ module.exports = {
   TutorApproval,
   WardenApproval,
   SecurityLog,
-  Notification
+  Notification,
+  Announcement
 };

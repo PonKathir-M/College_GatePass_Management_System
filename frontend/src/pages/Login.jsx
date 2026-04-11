@@ -1,235 +1,157 @@
-import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { AuthContext } from "../context/AuthContext";
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import HomeIcon from '@mui/icons-material/Home';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DescriptionIcon from '@mui/icons-material/Description';
+import ForumIcon from '@mui/icons-material/Forum';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import ShieldIcon from '@mui/icons-material/Shield';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import SettingsIcon from '@mui/icons-material/Settings';
+
 import "../styles/login.css";
 
-const Login = () => {
-  const { login } = useContext(AuthContext);
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [adminForm, setAdminForm] = useState({ email: "", password: "" });
-
-  const roles = [
-    { icon: "👨‍💼", label: "Admin", value: "admin", title: "Administrator" },
-    { icon: "👨‍🏫", label: "Tutor", value: "staff", title: "Staff/Tutor" },
-    { icon: "👔", label: "HOD", value: "hod", title: "Head of Department" },
-    { icon: "👨‍🎓", label: "Student", value: "student", title: "Student" },
-    { icon: "🚨", label: "Warden", value: "warden", title: "Warden" },
-    { icon: "👮", label: "Security", value: "security", title: "Security Guard" }
-  ];
-
-  const handleLogin = async (role) => {
-    if (role.value === "admin") {
-      setShowAdminLogin(true);
-      return;
-    }
-
-    if (["staff", "hod", "warden", "security"].includes(role.value)) {
-      navigate("/staff");
-      return;
-    }
-
-    if (role.value === "student") {
-      navigate("/student-login");
-      return;
-    }
-
-    setError("This role requires dynamic user creation through the admin panel");
-  };
-
-  const handleAdminLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await axios.post("http://localhost:5001/api/auth/login", {
-        email: adminForm.email,
-        password: adminForm.password
-      });
-
-      const { token, user } = response.data;
-
-      if (user.role !== "admin") {
-        setError("Invalid admin credentials");
-        return;
-      }
-
-      login({ token, user });
-      navigate("/admin");
-    } catch (err) {
-      setError(err.response?.data?.message || "Invalid credentials");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (showAdminLogin) {
-    return (
-      <div className="login">
-        <div className="login-content">
-          <div className="login-header">
-            <h1>👨‍💼 Admin Login</h1>
-            <p>College Gate Pass System</p>
-          </div>
-
-          {error && (
-            <div
-              style={{
-                backgroundColor: "#fee2e2",
-                color: "#991b1b",
-                padding: "1rem",
-                borderRadius: "8px",
-                marginBottom: "1rem"
-              }}
-            >
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleAdminLogin} style={{ maxWidth: "400px", margin: "0 auto" }}>
-            <div style={{ marginBottom: "1rem" }}>
-              <label style={{ display: "block", marginBottom: "0.5rem", color: "white", fontWeight: "600" }}>
-                📧 Email
-              </label>
-              <input
-                type="email"
-                placeholder="Enter admin email"
-                value={adminForm.email}
-                onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
-                style={{
-                  width: "100%",
-                  padding: "0.75rem",
-                  border: "2px solid white",
-                  borderRadius: "8px",
-                  fontSize: "1rem",
-                  boxSizing: "border-box"
-                }}
-                required
-              />
-            </div>
-
-            <div style={{ marginBottom: "1.5rem" }}>
-              <label style={{ display: "block", marginBottom: "0.5rem", color: "white", fontWeight: "600" }}>
-                🔐 Password
-              </label>
-              <input
-                type="password"
-                placeholder="Enter password"
-                value={adminForm.password}
-                onChange={(e) => setAdminForm({ ...adminForm, password: e.target.value })}
-                style={{
-                  width: "100%",
-                  padding: "0.75rem",
-                  border: "2px solid white",
-                  borderRadius: "8px",
-                  fontSize: "1rem",
-                  boxSizing: "border-box"
-                }}
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                background: "white",
-                border: "none",
-                borderRadius: "8px",
-                fontSize: "1rem",
-                fontWeight: "600",
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.7 : 1
-              }}
-            >
-              {loading ? "Logging in..." : "🔑 Login"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setShowAdminLogin(false);
-                setAdminForm({ email: "", password: "" });
-                setError("");
-              }}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                background: "transparent",
-                border: "2px solid white",
-                borderRadius: "8px",
-                fontSize: "1rem",
-                fontWeight: "600",
-                color: "white",
-                cursor: "pointer",
-                marginTop: "1rem"
-              }}
-            >
-              ← Back to Login
-            </button>
-          </form>
-        </div>
-
-        <div className="login-background">
-          <div className="bg-shape bg-shape-1"></div>
-          <div className="bg-shape bg-shape-2"></div>
-          <div className="bg-shape bg-shape-3"></div>
-        </div>
-      </div>
-    );
+const roleCards = [
+  {
+    key: "student",
+    title: "Student",
+    action: "Request Pass",
+    route: "/student-login",
+    iconKey: "student",
+    BgIcon: DescriptionIcon,
+    pillColor: "#cce5ff",
+    pillText: "#004085"
+  },
+  {
+    key: "tutor",
+    title: "Tutor",
+    action: "Approve Pass",
+    route: "/staff",
+    iconKey: "parent",
+    BgIcon: ForumIcon,
+    pillColor: "#d4edda",
+    pillText: "#155724"
+  },
+  {
+    key: "hod",
+    title: "HOD",
+    action: "Manage Requests",
+    route: "/staff",
+    iconKey: "faculty",
+    BgIcon: AssignmentIcon,
+    pillColor: "#fff3cd",
+    pillText: "#856404"
+  },
+  {
+    key: "security",
+    title: "Security",
+    action: "Verify Pass",
+    route: "/staff",
+    iconKey: "security",
+    BgIcon: ShieldIcon,
+    pillColor: "#e2e3e5",
+    pillText: "#383d41"
+  },
+  {
+    key: "warden",
+    title: "Warden",
+    action: "View Logs",
+    route: "/staff",
+    iconKey: "warden",
+    BgIcon: LibraryBooksIcon,
+    pillColor: "#d1ecf1",
+    pillText: "#0c5460"
+  },
+  {
+    key: "admin",
+    title: "Admin",
+    action: "Control Panel",
+    route: "/staff",
+    iconKey: "admin",
+    BgIcon: SettingsIcon,
+    pillColor: "#f8d7da",
+    pillText: "#721c24"
   }
+];
+
+const Login = () => {
+  const navigate = useNavigate();
 
   return (
-    <div className="login">
-      <div className="login-content">
-        <div className="login-header">
-          <h1>🎓 College Gate Pass System</h1>
-          <p>Secure & Centralized Campus Access Management</p>
-        </div>
-
-        {error && (
-          <div
-            style={{
-              backgroundColor: "#fee2e2",
-              color: "#991b1b",
-              padding: "1rem",
-              borderRadius: "8px",
-              marginBottom: "1rem"
-            }}
-          >
-            {error}
+    <div className="gpms-v2-page">
+      <header className="gpms-v2-topbar">
+        <div className="brand-section">
+          <VerifiedUserIcon className="brand-icon" />
+          <div className="brand-text">
+            <span className="brand-highlight">GatePass</span> Management System
           </div>
-        )}
-
-        <div className="login-container">
-          {roles.map((role) => (
-            <button
-              key={role.value}
-              onClick={() => handleLogin(role)}
-              disabled={loading}
-              className="login-btn"
-              title={role.title}
-            >
-              <span className="btn-emoji" aria-hidden="true">{role.icon}</span>
-              <span className="btn-label">{role.label}</span>
-              {loading && <div className="btn-loader"></div>}
-            </button>
-          ))}
         </div>
+        <nav className="top-nav-v2">
+          <span>Dashboard</span>
+          <span className="nav-divider">|</span>
+          <span>Reports</span>
+          <span className="nav-divider">|</span>
+          <span className="nav-dropdown">Support <ExpandMoreIcon fontSize="small" /></span>
+          <NotificationsIcon className="bell-icon" />
+          <button type="button" className="login-btn">Login</button>
+        </nav>
+      </header>
 
-      </div>
+      <main className="gpms-v2-main">
+        <section className="hero-section">
+          <div className="location-tag">
+            <HomeIcon fontSize="small" /> National Engineering College, Kovilpatti
+          </div>
+          <h1>National Engineering College</h1>
+          <h2>GatePass Management System</h2>
+        </section>
 
-      <div className="login-background">
-        <div className="bg-shape bg-shape-1"></div>
-        <div className="bg-shape bg-shape-2"></div>
-        <div className="bg-shape bg-shape-3"></div>
-      </div>
+        <section className="role-cards-grid">
+          {roleCards.map((card) => (
+            <div
+              key={card.key}
+              className={`role-card-v2 ${card.key}-card`}
+              onClick={() => navigate(card.route)}
+              role="button"
+              tabIndex={0}
+            >
+              <card.BgIcon className="card-bg-icon" />
+
+              <div className="card-character-container">
+                <img
+                  src={process.env.PUBLIC_URL + `/images/${card.iconKey}.png`}
+                  alt={card.title}
+                  className="role-character"
+                  onError={(e) => {
+                    // Fallback to a transparent placeholder if image is not placed by user yet
+                    e.target.style.display = 'none';
+                  }}
+                />
+              </div>
+
+              <div className="card-content-v2">
+                <div className="role-title-v2">{card.title}</div>
+                <div
+                  className="role-action-pill"
+                  style={{ backgroundColor: card.pillColor, color: card.pillText }}
+                >
+                  {card.action}
+                </div>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        <footer className="gpms-v2-footer">
+          <div className="footer-line">
+            <div className="dash-line" />
+            <p>Efficient. <strong>Secure.</strong> Reliable.</p>
+            <div className="dash-line" />
+          </div>
+          <p className="footer-subtext">Your Gateway to Smart Pass Management</p>
+        </footer>
+      </main>
     </div>
   );
 };

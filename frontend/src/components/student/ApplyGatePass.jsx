@@ -1,20 +1,18 @@
 import { useState, useEffect } from "react";
 import "../styles/gatepass-form.css";
-import { applyGatePass, getMyPasses } from "../../services/studentService";
+import { applyGatePass, getProfile } from "../../services/studentService";
 
 const ApplyGatePass = () => {
   const [form, setForm] = useState({
     reason: "",
     out_time: "",
-    expected_return: "",
-    category: "day-scholar"
+    expected_return: ""
   });
-
   const [submitted, setSubmitted] = useState(false);
   const [passId, setPassId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [userCategory, setUserCategory] = useState(null);
+  const [userCategory, setUserCategory] = useState("day-scholar");
 
   const reasons = [
     "Medical",
@@ -25,18 +23,14 @@ const ApplyGatePass = () => {
     "Other"
   ];
 
-  // Fetch user's student category on mount
   useEffect(() => {
     const fetchUserCategory = async () => {
       try {
-        const passes = await getMyPasses();
-        // Get student category from profile or latest pass
-        if (passes && passes.length > 0) {
-          setUserCategory(passes[0].Student?.category);
-          setForm(prev => ({ ...prev, category: passes[0].Student?.category || "day-scholar" }));
-        }
+        const profileRes = await getProfile();
+        const category = profileRes?.data?.student?.category || "day-scholar";
+        setUserCategory(category);
       } catch (err) {
-        console.error("Error fetching user info:", err);
+        console.error("Error fetching user category:", err);
       }
     };
     fetchUserCategory();
@@ -50,7 +44,6 @@ const ApplyGatePass = () => {
       return;
     }
 
-    // Validate times
     if (form.out_time >= form.expected_return) {
       setError("Expected return time must be after out time");
       return;
@@ -69,13 +62,11 @@ const ApplyGatePass = () => {
       setPassId(response.data.gatepass_id);
       setSubmitted(true);
 
-      // Reset form after 4 seconds
       setTimeout(() => {
-        setForm({ 
-          reason: "", 
-          out_time: "", 
-          expected_return: "", 
-          category: userCategory || "day-scholar" 
+        setForm({
+          reason: "",
+          out_time: "",
+          expected_return: ""
         });
         setSubmitted(false);
         setPassId(null);
@@ -91,66 +82,49 @@ const ApplyGatePass = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Check if it's before 9:15 AM (for hostellers)
   const getCurrentTime = () => {
     const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    return hours * 60 + minutes;
+    return now.getHours() * 60 + now.getMinutes();
   };
 
   const isBeforeWardenTime = getCurrentTime() < 9 * 60 + 15;
   const isAfterSecurityTime = getCurrentTime() >= 17 * 60 + 15;
-
-  const canApply = !(form.category === "hosteller" && isAfterSecurityTime);
+  const isHosteller = (userCategory || "").toLowerCase() === "hosteller";
+  const canApply = !(isHosteller && isAfterSecurityTime);
 
   return (
     <div className="gatepass-form-container">
       {submitted ? (
         <div className="success-message">
-          <div className="success-icon">✅</div>
-          <h3>Gate Pass Request Submitted Successfully!</h3>
-          <p>Your Gate Pass ID: <strong>{passId}</strong></p>
-          <p>Your request is now under review. You'll receive notifications on status updates.</p>
+          <div className="success-icon">OK</div>
+          <h3>Gate Pass Request Submitted Successfully</h3>
+          <p>
+            Your Gate Pass ID: <strong>{passId}</strong>
+          </p>
+          <p>Your request is now under review.</p>
         </div>
       ) : (
         <>
           <div className="form-card">
-            <h2>📝 Apply for Gate Pass</h2>
+            <h2>Apply for Gate Pass</h2>
 
             {!canApply && (
               <div className="warning-box">
-                ⚠️ Hostellers cannot apply for gate pass after 5:15 PM. Regular exit timings apply.
+                Hostellers cannot apply for gate pass after 5:15 PM.
               </div>
             )}
 
-            {error && (
-              <div className="error-box">
-                ❌ {error}
-              </div>
-            )}
+            {error && <div className="error-box">{error}</div>}
 
             <form onSubmit={handleSubmit}>
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="category" className="form-label">Student Category</label>
-                  <select
-                    id="category"
-                    name="category"
-                    value={form.category}
-                    onChange={handleChange}
-                    className="form-input"
-                  >
-                    <option value="day-scholar">Day Scholar</option>
-                    <option value="hosteller">Hosteller</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="reason" className="form-label">Reason for Gate Pass</label>
+                  <label htmlFor="reason" className="form-label">
+                    Reason for Gate Pass
+                  </label>
                   <select
                     id="reason"
                     name="reason"
@@ -171,7 +145,9 @@ const ApplyGatePass = () => {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="outTime" className="form-label">Out Time</label>
+                  <label htmlFor="outTime" className="form-label">
+                    Out Time
+                  </label>
                   <input
                     id="outTime"
                     type="time"
@@ -184,7 +160,9 @@ const ApplyGatePass = () => {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="expectedReturn" className="form-label">Expected Return Time</label>
+                  <label htmlFor="expectedReturn" className="form-label">
+                    Expected Return Time
+                  </label>
                   <input
                     id="expectedReturn"
                     type="time"
@@ -197,32 +175,32 @@ const ApplyGatePass = () => {
                 </div>
               </div>
 
+              <div className="fixed-category-chip">
+                Student Category: <strong>{isHosteller ? "Hosteller" : "Day Scholar"}</strong> (set by admin)
+              </div>
+
               <div className="form-info">
-                {form.category === "hosteller" && isBeforeWardenTime && (
+                {isHosteller && isBeforeWardenTime && (
                   <div className="info-box">
-                    ℹ️ <strong>Hosteller Morning Rule:</strong> Your request will go to Warden first. If approved, Tutor approval will be skipped.
+                    <strong>Hosteller Morning Rule:</strong> Request goes to Warden first.
                   </div>
                 )}
 
-                {form.category === "day-scholar" && (
+                {!isHosteller && (
                   <div className="info-box">
-                    ℹ️ <strong>Day Scholar:</strong> Your request will go to Tutor → HOD for approval.
+                    <strong>Day Scholar:</strong> Request goes to Tutor and then HOD.
                   </div>
                 )}
               </div>
 
-              <button 
-                type="submit" 
-                className="btn btn-primary btn-lg"
-                disabled={!canApply || loading}
-              >
-                {loading ? "⏳ Submitting..." : "🚪 Submit Gate Pass Request"}
+              <button type="submit" className="btn btn-primary btn-lg" disabled={!canApply || loading}>
+                {loading ? "Submitting..." : "Submit Gate Pass Request"}
               </button>
             </form>
           </div>
 
           <div className="workflow-info">
-            <h3>📊 Approval Workflow</h3>
+            <h3>Approval Workflow</h3>
             <div className="workflow-steps">
               <div className="workflow-step">
                 <div className="step-number">1</div>
@@ -232,7 +210,7 @@ const ApplyGatePass = () => {
                 </div>
               </div>
 
-              <div className="workflow-arrow">→</div>
+              <div className="workflow-arrow">-&gt;</div>
 
               <div className="workflow-step">
                 <div className="step-number">2</div>
@@ -242,7 +220,7 @@ const ApplyGatePass = () => {
                 </div>
               </div>
 
-              <div className="workflow-arrow">→</div>
+              <div className="workflow-arrow">-&gt;</div>
 
               <div className="workflow-step">
                 <div className="step-number">3</div>
@@ -252,13 +230,13 @@ const ApplyGatePass = () => {
                 </div>
               </div>
 
-              <div className="workflow-arrow">→</div>
+              <div className="workflow-arrow">-&gt;</div>
 
               <div className="workflow-step">
                 <div className="step-number">4</div>
                 <div className="step-content">
                   <h4>Gate Pass Granted</h4>
-                  <p>You're ready to exit campus</p>
+                  <p>Ready to exit campus</p>
                 </div>
               </div>
             </div>

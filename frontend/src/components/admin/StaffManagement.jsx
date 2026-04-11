@@ -225,6 +225,30 @@ const StaffManagement = () => {
     }
   };
 
+  const handleResetStaffPassword = async (staff) => {
+    if (!window.confirm(`Reset password for ${staff.name}? They will be forced to change it on next login.`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        `http://localhost:5001/api/admin/staff/${staff.user_id}/reset-password-flag`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      setSuccessMessage(
+        `Password reset for ${staff.name}. Temporary password: ${response.data.temporaryPassword}`
+      );
+      fetchStaff();
+      setTimeout(() => setSuccessMessage(""), 5000);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error resetting password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCancel = () => {
     setFormData({ name: "", email: "", password: "", role: "staff", department_id: "" });
     setEditingId(null);
@@ -445,6 +469,12 @@ const StaffManagement = () => {
                         onClick={() => handleEditStaff(staff)}
                       >
                         ✏️ Edit
+                      </button>
+                      <button
+                        className="btn btn-sm btn-secondary-action"
+                        onClick={() => handleResetStaffPassword(staff)}
+                      >
+                        Reset Password
                       </button>
                       {staff.active && (
                         <button

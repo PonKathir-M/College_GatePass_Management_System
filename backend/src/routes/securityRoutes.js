@@ -5,6 +5,7 @@ const ctrl = require("../controllers/securityController");
 
 // Approved passes to check
 router.get("/approved-passes", auth, role(["security"]), ctrl.getApprovedPasses);
+router.get("/dashboard-passes", auth, role(["security"]), ctrl.getDashboardPasses);
 
 // Security logs
 router.get("/logs", auth, role(["security"]), ctrl.getLogs);

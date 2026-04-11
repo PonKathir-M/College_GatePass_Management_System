@@ -4,6 +4,7 @@ import axios from "axios";
 import Navbar from "../common/Navbar";
 import Sidebar from "../common/Sidebar";
 import StudentAssignmentCard from "./StudentAssignmentCard";
+import ApprovedRequests from "./ApprovedRequests";
 import "../styles/tutor-dashboard.css";
 
 const Dashboard = () => {
@@ -21,7 +22,8 @@ const Dashboard = () => {
 
   const tabs = [
     { id: "pending", label: "⏳ Pending Requests", icon: "⏳" },
-    { id: "assign", label: "📋 Assign Students", icon: "📋" },
+    { id: "history", label: "📋 Approval History", icon: "📋" },
+    { id: "assign", label: "👥 Assign Students", icon: "👥" },
   ];
 
   // Fetch pending requests

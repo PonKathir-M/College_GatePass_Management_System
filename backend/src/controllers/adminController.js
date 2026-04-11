@@ -3,6 +3,13 @@ const bcrypt = require("bcryptjs");
 const { Sequelize, Op } = require("sequelize");
 const fs = require('fs');
 const csv = require('csv-parser');
+const { isHosteller, toStoredCategory } = require("../utils/studentCategory");
+
+const getDefaultPasswordForRole = (role) => {
+  return role === "student"
+    ? process.env.DEFAULT_STUDENT_PASSWORD || "student123"
+    : process.env.DEFAULT_STAFF_PASSWORD || "staff123";
+};
 
 /* ================= DEPARTMENTS ================= */
 
@@ -287,11 +294,26 @@ exports.resetStaffPasswordFlag = async (req, res, next) => {
       return res.status(404).json({ message: "Staff not found" });
     }
 
+    if (!["staff", "hod", "warden", "security", "admin"].includes(user.role)) {
+      return res.status(400).json({ message: "Selected user is not a staff account" });
+    }
+
+    const temporaryPassword = getDefaultPasswordForRole(user.role);
     user.needs_password_change = true;
-    user.password = await bcrypt.hash(process.env.DEFAULT_STAFF_PASSWORD || "staff123", 10);
+    user.password = await bcrypt.hash(temporaryPassword, 10);
     await user.save();
 
-    res.json({ message: "Staff password reset to default and allowed to change on next login" });
+    res.json({
+      message: "Password reset successfully. User must change it on next login.",
+      temporaryPassword,
+      user: {
+        id: user.user_id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        needs_password_change: user.needs_password_change
+      }
+    });
   } catch (err) {
     next(err);
   }
@@ -329,7 +351,7 @@ exports.createStudent = async (req, res, next) => {
 
     const studentData = {
       year,
-      category,
+      category: toStoredCategory(category),
       parent_phone,
       student_mobile_number,
       UserUserId: user.user_id,
@@ -408,7 +430,7 @@ exports.uploadStudentCSV = async (req, res, next) => {
 
             await Student.create({
               year: parseInt(row.year),
-              category: row.category,
+              category: toStoredCategory(row.category),
               parent_phone: row.parent_phone,
               student_mobile_number: row.student_mobile_number,
               UserUserId: user.user_id,
@@ -487,7 +509,7 @@ exports.updateStudent = async (req, res, next) => {
 
     const updateData = {
       year: req.body.year || student.year,
-      category: req.body.category || student.category,
+      category: req.body.category ? toStoredCategory(req.body.category) : student.category,
       parent_phone: req.body.parent_phone || student.parent_phone,
       student_mobile_number: req.body.student_mobile_number || student.student_mobile_number
     };
@@ -529,11 +551,26 @@ exports.allowPasswordChange = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (user.role !== "student") {
+      return res.status(400).json({ message: "Selected user is not a student account" });
+    }
+
+    const temporaryPassword = getDefaultPasswordForRole(user.role);
     user.needs_password_change = true;
-    user.password = await bcrypt.hash(process.env.DEFAULT_STUDENT_PASSWORD || "student123", 10); // Reset to default too? Yes, usually implied.
+    user.password = await bcrypt.hash(temporaryPassword, 10);
     await user.save();
 
-    res.json({ message: "User allowed to change password (reset to default)" });
+    res.json({
+      message: "Password reset successfully. User must change it on next login.",
+      temporaryPassword,
+      user: {
+        id: user.user_id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        needs_password_change: user.needs_password_change
+      }
+    });
   } catch (err) {
     next(err);
   }
@@ -761,8 +798,8 @@ exports.getLiveStatus = async (req, res, next) => {
     const studentsInsideCount = totalStudents - studentsOutsideCount;
 
     // Hostellers Outside
-    const hostellersOutsideCount = outsideLogs.filter(log =>
-      log.GatePass && log.GatePass.Student && log.GatePass.Student.category === "Hosteller"
+    const hostellersOutsideCount = outsideLogs.filter((log) =>
+      isHosteller(log.GatePass?.Student?.category)
     ).length;
 
     // Late Returns

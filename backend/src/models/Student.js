@@ -3,6 +3,7 @@ const sequelize = require("../config/database");
 
 const Student = sequelize.define("Student", {
   student_id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+  roll_no: DataTypes.STRING,
   year: DataTypes.INTEGER,
   category: DataTypes.STRING,
   parent_phone: DataTypes.STRING,

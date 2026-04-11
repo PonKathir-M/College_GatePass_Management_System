@@ -6,7 +6,8 @@ const Notification = sequelize.define("Notification", {
   sender: DataTypes.STRING,
   message: DataTypes.STRING,
   type: DataTypes.STRING,
-  reference_id: DataTypes.STRING
+  reference_id: DataTypes.STRING,
+  is_read: { type: DataTypes.BOOLEAN, defaultValue: false }
 });
 
 module.exports = Notification;

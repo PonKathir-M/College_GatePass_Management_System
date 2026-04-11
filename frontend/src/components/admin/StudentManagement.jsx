@@ -219,6 +219,30 @@ const StudentManagement = () => {
     }
   };
 
+  const handleResetStudentPassword = async (student) => {
+    if (!window.confirm(`Reset password for ${student.name}? They will be forced to change it on next login.`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        `http://localhost:5001/api/admin/student/${student.user_id}/reset-password-flag`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      setSuccessMessage(
+        `Password reset for ${student.name}. Temporary password: ${response.data.temporaryPassword}`
+      );
+      fetchStudents();
+      setTimeout(() => setSuccessMessage(""), 5000);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error resetting password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCancel = () => {
     setFormData({ name: "", email: "", password: "", year: "", category: "day-scholar", parent_phone: "", student_mobile_number: "", department_id: "" });
     setEditingId(null);
@@ -495,6 +519,12 @@ const StudentManagement = () => {
                         onClick={() => handleEditStudent(student)}
                       >
                         ✏️ Edit
+                      </button>
+                      <button
+                        className="btn btn-sm btn-secondary-action"
+                        onClick={() => handleResetStudentPassword(student)}
+                      >
+                        Reset Password
                       </button>
                       {student.active && (
                         <button

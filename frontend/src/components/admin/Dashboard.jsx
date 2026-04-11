@@ -5,6 +5,7 @@ import StaffManagement from "./StaffManagement";
 import StudentManagement from "./StudentManagement";
 import LiveStatusBoard from "./LiveStatusBoard";
 import Analytics from "./Analytics";
+import Reports from "./Reports";
 import Navbar from "../common/Navbar";
 import Sidebar from "../common/Sidebar";
 import "../styles/dashboard.css";
@@ -17,7 +18,8 @@ const Dashboard = () => {
     { id: "dashboard", label: "📊 Dashboard", icon: "📊" },
     { id: "departments", label: "🏢 Departments", icon: "🏢" },
     { id: "staff", label: "👨‍🏫 Staff", icon: "👨‍🏫" },
-    { id: "students", label: "👨‍🎓 Students", icon: "👨‍🎓" }
+    { id: "students", label: "👨‍🎓 Students", icon: "👨‍🎓" },
+    { id: "reports", label: "📄 Reports", icon: "📄" }
   ];
 
   return (
@@ -48,6 +50,7 @@ const Dashboard = () => {
           {activeTab === "departments" && <DepartmentManagement />}
           {activeTab === "staff" && <StaffManagement />}
           {activeTab === "students" && <StudentManagement />}
+          {activeTab === "reports" && <Reports />}
         </div>
       </div>
     </div>

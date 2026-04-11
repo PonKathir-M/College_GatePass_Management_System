@@ -1,236 +1,130 @@
-.student-login {
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+.role-auth-page {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 15% 15%, rgba(15, 98, 254, 0.15), transparent 38%),
-    radial-gradient(circle at 80% 18%, rgba(0, 163, 163, 0.15), transparent 35%),
-    linear-gradient(165deg, #f3f8ff 0%, #eaf2ff 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.3rem;
+  background: #f2e9eb;
+  font-family: "Inter", sans-serif;
 }
 
-.student-login-container {
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: 1.1rem;
-  max-width: 1060px;
-  width: 100%;
-  align-items: stretch;
-}
-
-.student-login-card,
-.student-login-sidebar {
-  background: #ffffff;
-  border: 1px solid #d8e2f1;
-  border-radius: 18px;
-  box-shadow: 0 16px 34px rgba(17, 56, 122, 0.10);
-}
-
-.student-login-card {
-  padding: 2rem;
-}
-
-.student-login-header {
-  margin-bottom: 1.4rem;
-}
-
-.student-login-header h1 {
-  font-size: clamp(1.5rem, 2.5vw, 2.15rem);
-  color: #173b6d;
-  margin: 0;
-}
-
-.student-login-header p {
-  color: #5c7192;
-  margin: 0.4rem 0 0;
-}
-
-.student-login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.95rem;
-}
-
-.student-error-message {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.75rem;
-  background-color: #feefee;
-  color: #8b221a;
-  border: 1px solid #f6c0ba;
-  border-radius: 10px;
-  font-weight: 600;
-}
-
-.student-error-message p {
-  margin: 0;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.form-group label {
-  font-weight: 700;
-  color: #2f4d77;
-  font-size: 0.86rem;
-}
-
-.form-group input {
-  padding: 0.7rem 0.85rem;
-  border: 1px solid #c7d8ef;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #4b7edc;
-  box-shadow: 0 0 0 3px rgba(75, 126, 220, 0.15);
-}
-
-.form-group input:disabled {
-  background-color: #f4f8ff;
-  cursor: not-allowed;
-}
-
-.password-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.password-input-wrapper input {
-  width: 100%;
-  padding-right: 2.5rem;
-}
-
-.toggle-password {
-  position: absolute;
-  right: 0.45rem;
-  background: #f1f6ff;
-  border: 1px solid #c6d7ef;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  cursor: pointer;
-  width: 30px;
-  height: 30px;
-}
-
-.student-login-btn {
-  margin-top: 0.3rem;
-  padding: 0.78rem 1rem;
-  background: linear-gradient(125deg, #1d72f2 0%, #1155d1 100%);
+.role-auth-header {
+  background: #cb4d55;
   color: #fff;
-  border: 1px solid #1b64df;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
+  text-align: center;
+  padding: 56px 16px 36px;
+}
+
+.role-auth-header h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  letter-spacing: 0.05em;
+  font-weight: 800;
+}
+
+.role-auth-logo {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  margin: 24px auto 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
+  background: #fff;
+  color: #cb4d55;
+  font-weight: 800;
+  border: 4px solid #b1373f;
 }
 
-.student-login-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 18px rgba(17, 85, 209, 0.24);
+.role-auth-body {
+  max-width: 760px;
+  margin: -18px auto 0;
+  padding: 20px;
 }
 
-.student-login-btn:disabled {
+.role-auth-card {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #ead4d7;
+  padding: 30px;
+  box-shadow: 0 10px 28px rgba(99, 39, 43, 0.08);
+}
+
+.role-auth-card h2 {
+  margin: 0 0 18px;
+  font-size: 2rem;
+  text-align: center;
+  color: #3f5563;
+}
+
+.role-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 48px;
+  border: 1px solid #d8d8d8;
+  border-radius: 4px;
+  padding: 0 14px;
+  font-size: 1rem;
+  margin-bottom: 14px;
+}
+
+.role-input:focus {
+  outline: none;
+  border-color: #cb4d55;
+  box-shadow: 0 0 0 3px rgba(203, 77, 85, 0.16);
+}
+
+.role-submit {
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 4px;
+  background: #cc1e2a;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.role-submit:hover {
+  background: #b41722;
+}
+
+.role-submit:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
-.loader {
-  border: 3px solid rgba(255, 255, 255, 0.35);
-  border-top: 3px solid white;
-  border-radius: 50%;
-  width: 17px;
-  height: 17px;
-  animation: spin 1s linear infinite;
+.role-error {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #e9b7ba;
+  background: #fff1f2;
+  color: #9a2b32;
+  font-weight: 600;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.role-footer {
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid #ececec;
+  color: #5e6f79;
+  display: grid;
+  gap: 4px;
 }
 
-.student-login-footer {
-  margin-top: 1rem;
-  color: #5d7292;
-  font-size: 0.9rem;
+.role-footer a {
+  color: #4c6472;
+  text-decoration: none;
+  font-weight: 600;
 }
 
-.student-login-footer p {
-  margin: 0.25rem 0;
+.role-footer a:hover {
+  text-decoration: underline;
 }
 
-.contact-info {
-  font-size: 0.82rem !important;
-}
-
-.student-login-help {
-  margin-top: 0.9rem;
-  padding-top: 0.9rem;
-  border-top: 1px solid #e5eefb;
-}
-
-.student-login-help a {
-  color: #145ed8;
-  font-weight: 700;
-}
-
-.student-login-sidebar {
-  padding: 2rem;
-  background: linear-gradient(165deg, #11345f 0%, #0f4269 100%);
-  color: #e9f3ff;
-  border-color: rgba(255, 255, 255, 0.18);
-}
-
-.sidebar-content h2 {
-  font-size: 1.35rem;
-  margin: 0 0 1rem;
-}
-
-.features-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.features-list li {
-  padding: 0.65rem 0;
-  font-size: 0.94rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-.features-list li:last-child {
-  border-bottom: none;
-}
-
-@media (max-width: 860px) {
-  .student-login-container {
-    grid-template-columns: 1fr;
-  }
-
-  .student-login-sidebar {
-    padding: 1.2rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .student-login {
-    padding: 0.75rem;
-  }
-
-  .student-login-card {
-    padding: 1.1rem;
+@media (max-width: 640px) {
+  .role-auth-card {
+    padding: 22px 16px;
   }
 }

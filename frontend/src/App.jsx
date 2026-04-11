@@ -4,6 +4,7 @@ import StaffLogin from "./pages/StaffLogin";
 import StudentLogin from "./pages/StudentLogin";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
+import ForcePasswordChange from "./pages/ForcePasswordChange";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 
 import AdminDashboard from "./components/admin/Dashboard";
@@ -23,6 +24,11 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/staff" element={<StaffLogin />} />
           <Route path="/student-login" element={<StudentLogin />} />
+          <Route path="/change-password" element={
+            <ProtectedRoute>
+              <ForcePasswordChange />
+            </ProtectedRoute>
+          } />
 
           <Route path="/admin" element={
             <ProtectedRoute role="admin">

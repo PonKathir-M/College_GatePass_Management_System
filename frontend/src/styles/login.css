@@ -5,12 +5,18 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(145deg, #0b1f3a 0%, #123b66 50%, #13567a 100%);
+  background:
+    url('../assets/college.png');
+
+  background-size: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
   position: relative;
   overflow: hidden;
   padding: 1.5rem;
 }
 
+/*
 .login-background {
   position: absolute;
   inset: 0;
@@ -20,7 +26,7 @@
     radial-gradient(circle at 85% 24%, rgba(0, 163, 163, 0.35), transparent 30%),
     radial-gradient(circle at 50% 82%, rgba(255, 255, 255, 0.08), transparent 38%);
 }
-
+*/
 .bg-shape {
   position: absolute;
   filter: blur(55px);
@@ -29,39 +35,12 @@
   animation: ambientMove 14s infinite alternate ease-in-out;
 }
 
-.bg-shape-1 {
-  width: 340px;
-  height: 340px;
-  background: #3a86ff;
-  top: -70px;
-  left: -70px;
-  border-radius: 42% 58% 55% 45% / 43% 48% 52% 57%;
-}
-
-.bg-shape-2 {
-  width: 320px;
-  height: 320px;
-  background: #06b6d4;
-  bottom: -60px;
-  right: -50px;
-  border-radius: 67% 33% 40% 60% / 35% 53% 47% 65%;
-  animation-delay: -3s;
-}
-
-.bg-shape-3 {
-  width: 250px;
-  height: 250px;
-  background: #65c3ff;
-  top: 58%;
-  left: 48%;
-  border-radius: 50%;
-  animation-delay: -7s;
-}
 
 @keyframes ambientMove {
   0% {
     transform: translate(0, 0) rotate(0deg);
   }
+
   100% {
     transform: translate(26px, 38px) rotate(10deg);
   }
@@ -72,11 +51,7 @@
   z-index: 2;
   width: min(1120px, 100%);
   padding: 2rem;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: linear-gradient(165deg, rgba(9, 25, 44, 0.78), rgba(14, 43, 76, 0.68));
-  box-shadow: 0 24px 50px rgba(4, 20, 42, 0.48);
-  backdrop-filter: blur(12px);
+
 }
 
 .login-header {
@@ -85,16 +60,28 @@
 }
 
 .login-header h1 {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: clamp(1.8rem, 3vw, 2.9rem);
-  color: #f4fbff;
-  margin-bottom: 0.55rem;
-  letter-spacing: -0.02em;
+  font-family: "Poppins", sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 600;
+  color: #ffffff;
+
+  /* Strong readability over image */
+  text-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.6),
+    0 4px 20px rgba(0, 0, 0, 0.5);
+
+  letter-spacing: 0.5px;
+  margin-bottom: 0.4rem;
 }
 
 .login-header p {
-  color: rgba(224, 240, 255, 0.88);
-  margin: 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.85);
+
+  /* subtle glow */
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+
+  letter-spacing: 0.6px;
 }
 
 .login-container {
@@ -103,26 +90,105 @@
   gap: 1rem;
 }
 
-.login-btn {
-  position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 16px;
-  padding: 1.2rem 1rem;
-  min-height: 136px;
-  background: linear-gradient(140deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
-  color: #f3f9ff;
-  display: flex;
-  flex-direction: column;
+/* 1. Admin */
+.login-btn:nth-child(1) {
+  min-height: 160px;
+  width: 250px;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  border-radius: 25px;
   transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url('../assets/admin.png');
+}
+
+/* 2. Tutor */
+.login-btn:nth-child(2) {
+  width: 250px;
+  min-height: 160px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 25px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url('../assets/faculty.png');
+}
+
+/*3. HOD */
+.login-btn:nth-child(3) {
+  width: 250px;
+  min-height: 160px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 25px;
+
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+    url('../assets/hod.png');
+
+  background-repeat: no-repeat;
+  /* 🔥 must */
+  background-size: 100%;
+  /* 🔥 reduce size */
+  background-position: center;
+  /* center */
+}
+
+/* 4. Student */
+.login-btn:nth-child(4) {
+  width: 250px;
+  padding: 1.2rem 1rem;
+  min-height: 160px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 25px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url('../assets/student.png');
+}
+
+/* 5. Warden */
+.login-btn:nth-child(5) {
+  width: 250px;
+  padding: 1.2rem 1rem;
+  min-height: 160px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 25px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url('../assets/warden.png');
+}
+
+/* 6. Security */
+.login-btn:nth-child(6) {
+  width: 250px;
+  padding: 1.2rem 1rem;
+  min-height: 160px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 25px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url('../assets/security.png');
 }
 
 .login-btn:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255, 255, 255, 0.44);
-  box-shadow: 0 16px 24px rgba(7, 27, 56, 0.44);
+  transform: scale(1.05);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
 }
 
 .btn-emoji {
@@ -151,7 +217,7 @@
   color: #a9ddff;
 }
 
-.login-content > form {
+.login-content>form {
   max-width: 430px !important;
   margin: 0 auto;
   padding: 1.4rem;
@@ -160,14 +226,14 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
-.login-content > form input {
+.login-content>form input {
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.3) !important;
   background: rgba(8, 30, 53, 0.45) !important;
   color: #fff !important;
 }
 
-.login-content > form button[type="submit"] {
+.login-content>form button[type="submit"] {
   border: 0 !important;
   background: linear-gradient(125deg, #1d72f2 0%, #1155d1 100%) !important;
   color: #fff;

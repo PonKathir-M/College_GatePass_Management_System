@@ -1,108 +1,200 @@
 import { useState, useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
-import api from "../services/api";
 import { useNavigate } from "react-router-dom";
-import "../styles/login.css"; // Reusing login styles
+import { AuthContext } from "../context/AuthContext";
+import { changePassword } from "../services/authService";
+import "../styles/force-password-change.css";
 
 const ForcePasswordChange = () => {
-    const { user, logout } = useContext(AuthContext);
-    const [currentPassword, setCurrentPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [error, setError] = useState("");
-    const navigate = useNavigate();
+  const { logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
+  const rules = [
+    { label: "Minimum 6 characters", valid: newPassword.length >= 6 },
+    { label: "Passwords match", valid: !!newPassword && newPassword === confirmPassword },
+    { label: "Different from current password", valid: !!newPassword && newPassword !== currentPassword }
+  ];
 
-        if (newPassword !== confirmPassword) {
-            setError("New passwords do not match");
-            return;
-        }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
 
-        if (newPassword.length < 6) {
-            setError("Password must be at least 6 characters");
-            return;
-        }
+    if (newPassword !== confirmPassword) {
+      setError("New passwords do not match");
+      setIsSubmitting(false);
+      return;
+    }
 
-        try {
-            await api.post(
-                "/auth/change-password",
-                { currentPassword, newPassword }
-            );
+    if (newPassword.length < 6) {
+      setError("Password must be at least 6 characters");
+      setIsSubmitting(false);
+      return;
+    }
 
-            // Update user in local storage to remove flag (hacky but works until refresh)
-            const updatedUser = { ...user, needs_password_change: false };
-            localStorage.setItem("user", JSON.stringify(updatedUser));
+    if (newPassword === currentPassword) {
+      setError("New password must be different from current password");
+      setIsSubmitting(false);
+      return;
+    }
 
-            // Ideally force a logout or update context, but let's try pushing to dashboard
-            // Better: Logout and ask to login again
-            alert("Password changed successfully! Please login with your new password.");
-            logout();
-            navigate("/");
-        } catch (err) {
-            setError(err.response?.data?.message || "Failed to change password");
-        }
-    };
+    try {
+      await changePassword({ currentPassword, newPassword });
+      alert("Password changed successfully! Please login with your new password.");
+      logout();
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to change password");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    return (
-        <div className="login">
-            <div className="login-background">
-                <div className="bg-shape bg-shape-1"></div>
-                <div className="bg-shape bg-shape-2"></div>
-                <div className="bg-shape bg-shape-3"></div>
+  return (
+    <div className="password-reset-page">
+      <div className="password-reset-background">
+        <div className="password-orb password-orb-one"></div>
+        <div className="password-orb password-orb-two"></div>
+        <div className="password-grid"></div>
+      </div>
+
+      <div className="password-reset-shell">
+        <section className="password-reset-aside">
+          <div className="password-badge">Secure Account Recovery</div>
+          <h1>Update Your Password</h1>
+          <p>
+            Your account needs a fresh password before you can continue to the
+            dashboard. Choose a secure password that you can remember easily.
+          </p>
+
+          <div className="password-reset-cards">
+            <div className="password-tip-card">
+              <strong>Why this matters</strong>
+              <span>We require a personal password so shared default credentials are removed.</span>
+            </div>
+            <div className="password-tip-card">
+              <strong>Quick tip</strong>
+              <span>Use a mix of letters, numbers, and something unique to you.</span>
+            </div>
+          </div>
+
+          <div className="password-rules">
+            {rules.map((rule) => (
+              <div
+                key={rule.label}
+                className={`password-rule ${rule.valid ? "valid" : ""}`}
+              >
+                <span className="password-rule-indicator" aria-hidden="true"></span>
+                <span>{rule.label}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="password-reset-card">
+          <div className="password-reset-header">
+            <div className="password-icon" aria-hidden="true">Lock</div>
+            <div>
+              <h2>Change Password</h2>
+              <p>Enter your current password and set a new one to continue.</p>
+            </div>
+          </div>
+
+          {error && (
+            <div className="password-reset-error">
+              <p>{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="password-reset-form">
+            <div className="password-field">
+              <label htmlFor="current-password">Current Password</label>
+              <div className="password-input-wrap">
+                <input
+                  id="current-password"
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter current password"
+                  disabled={isSubmitting}
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowCurrentPassword((value) => !value)}
+                  disabled={isSubmitting}
+                >
+                  {showCurrentPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
 
-            <div className="login-content">
-                <div className="login-header">
-                    <h1>🔐 Change Password</h1>
-                    <p>You must change your password to continue.</p>
-                </div>
-
-                {error && <div className="alert alert-error" style={{ maxWidth: '450px', margin: '0 auto 1rem', padding: '1rem', background: '#ef444420', border: '1px solid #ef444450', borderRadius: '12px', color: '#fca5a5' }}>{error}</div>}
-
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#e2e8f0' }}>Current Password</label>
-                        <input
-                            type="password"
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '12px' }}
-                            value={currentPassword}
-                            onChange={(e) => setCurrentPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#e2e8f0' }}>New Password</label>
-                        <input
-                            type="password"
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '12px' }}
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: '2rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#e2e8f0' }}>Confirm New Password</label>
-                        <input
-                            type="password"
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '12px' }}
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                    <button type="submit" style={{ width: '100%', padding: '1rem', borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', color: 'white', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
-                        Change Password
-                    </button>
-                </form>
+            <div className="password-field">
+              <label htmlFor="new-password">New Password</label>
+              <div className="password-input-wrap">
+                <input
+                  id="new-password"
+                  type={showNewPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Create a new password"
+                  disabled={isSubmitting}
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowNewPassword((value) => !value)}
+                  disabled={isSubmitting}
+                >
+                  {showNewPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
-        </div>
-    );
+
+            <div className="password-field">
+              <label htmlFor="confirm-password">Confirm New Password</label>
+              <div className="password-input-wrap">
+                <input
+                  id="confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter new password"
+                  disabled={isSubmitting}
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowConfirmPassword((value) => !value)}
+                  disabled={isSubmitting}
+                >
+                  {showConfirmPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="password-submit-btn"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Updating Password..." : "Save New Password"}
+            </button>
+          </form>
+        </section>
+      </div>
+    </div>
+  );
 };
 
 export default ForcePasswordChange;
