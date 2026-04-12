@@ -1,0 +1,135 @@
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: transparent;
+}
+
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 280px;
+  min-width: 0;
+}
+
+.dashboard-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.75rem;
+}
+
+.content-header {
+  margin-bottom: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(130deg, #ffffff 0%, #f4f9ff 100%);
+  box-shadow: var(--shadow-sm);
+}
+
+.content-header h1 {
+  font-size: clamp(1.25rem, 1.7vw, 1.95rem);
+  color: var(--text);
+  margin-bottom: 0.2rem;
+  font-weight: 700;
+}
+
+.content-header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.dashboard-content .card,
+.dashboard-content .requests-container,
+.dashboard-content .track-container,
+.dashboard-content .stats-container,
+.dashboard-content .warden-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-content .card {
+  padding: 1rem 1.15rem;
+}
+
+.dashboard-content .table-responsive {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.dashboard-content table thead tr {
+  background: linear-gradient(90deg, #eaf2ff 0%, #e9f8f8 100%);
+}
+
+.dashboard-content table th {
+  color: #24406a;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.dashboard-content table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #eaf0f8;
+}
+
+.dashboard-content table tbody tr:hover {
+  background: #f7fbff;
+}
+
+.dashboard-content .loading,
+.dashboard-content .loading-state,
+.dashboard-content .empty-state,
+.dashboard-content .no-data {
+  background: var(--surface);
+  border: 1px dashed #bfd2ec;
+  border-radius: var(--radius-md);
+  color: #567097;
+  padding: 1rem;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 1rem;
+  }
+
+  .content-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .dashboard-main {
+    margin-left: 86px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-content {
+    padding: 0.85rem;
+  }
+
+  .content-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .content-header p {
+    font-size: 0.9rem;
+  }
+
+  .dashboard-main {
+    margin-left: 0;
+  }
+}

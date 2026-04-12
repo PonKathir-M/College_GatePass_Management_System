@@ -1,0 +1,426 @@
+import { useContext, useState, useEffect } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import axios from "axios";
+import Navbar from "../common/Navbar";
+import Sidebar from "../common/Sidebar";
+import StudentAssignmentCard from "./StudentAssignmentCard";
+import "../styles/tutor-dashboard.css";
+
+const Dashboard = () => {
+  const { user, logout } = useContext(AuthContext);
+  const [activeTab, setActiveTab] = useState("pending");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [actionLoading, setActionLoading] = useState(null);
+  const [selectedRequests, setSelectedRequests] = useState([]);
+
+  // State for API data
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [departmentStudents, setDepartmentStudents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [staffProfile, setStaffProfile] = useState(null);
+
+  const tabs = [
+    { id: "pending", label: "⏳ Pending Requests", icon: "⏳" },
+    { id: "assign", label: "📋 Assign Students", icon: "📋" },
+  ];
+
+  // Fetch pending requests
+  useEffect(() => {
+    fetchPendingRequests();
+    fetchDepartmentStudents();
+    fetchStaffProfile();
+  }, []);
+
+  const fetchPendingRequests = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get("http://localhost:5001/api/tutor/pending", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Handle response - could be array or object with data property
+      const data = Array.isArray(response.data) ? response.data : response.data.requests || response.data;
+      setPendingRequests(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to fetch pending requests:", err);
+      setPendingRequests([]);
+      setError("Failed to load pending requests");
+    }
+  };
+
+  const fetchStaffProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      // Get current user profile with staff details
+      const response = await axios.get("http://localhost:5001/api/tutor/profile", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data && response.data.Staff) {
+        setStaffProfile(response.data.Staff);
+      }
+    } catch (err) {
+      console.warn("Could not fetch staff profile:", err);
+    }
+  };
+
+  const fetchDepartmentStudents = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get("http://localhost:5001/api/tutor/students", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const data = Array.isArray(response.data) ? response.data : response.data.students || response.data;
+      setDepartmentStudents(Array.isArray(data) ? data : []);
+      setError(""); // Clear error on success
+    } catch (err) {
+      console.error("Failed to fetch department students:", err);
+      setDepartmentStudents([]);
+      setError("Failed to load students - please refresh the page");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTime = (timeString) => {
+    if (!timeString) return "N/A";
+    // Check if it's already in HH:MM format or HH:MM:SS
+    if (timeString.includes(":")) {
+      return timeString.slice(0, 5);
+    }
+    return timeString;
+  };
+
+  const handleApprove = async (id) => {
+    if (!window.confirm("Are you sure you want to approve this gate pass?")) return;
+
+    setActionLoading(id);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`http://localhost:5001/api/tutor/approve/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Remove from list
+      setPendingRequests(prev => prev.filter(req => req.gatepass_id !== id));
+      alert("Gate pass approved successfully!");
+    } catch (err) {
+      console.error("Approval failed:", err);
+      alert(err.response?.data?.message || "Failed to approve gate pass");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = async (id) => {
+    const reason = window.prompt("Please provide a reason for rejection:");
+    if (!reason) return;
+
+    setActionLoading(id);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`http://localhost:5001/api/tutor/reject/${id}`,
+        { reason },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Remove from list
+      setPendingRequests(prev => prev.filter(req => req.gatepass_id !== id));
+      alert("Gate pass rejected successfully.");
+    } catch (err) {
+      console.error("Rejection failed:", err);
+      alert(err.response?.data?.message || "Failed to reject gate pass");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleBulkApprove = async () => {
+    if (selectedRequests.length === 0) return alert("Select at least one request");
+    if (!window.confirm(`Approve ${selectedRequests.length} selected requests?`)) return;
+    
+    setActionLoading("bulk");
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`http://localhost:5001/api/tutor/bulk-approve`, 
+        { passIds: selectedRequests },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPendingRequests(prev => prev.filter(req => !selectedRequests.includes(req.gatepass_id)));
+      setSelectedRequests([]);
+      alert("Bulk approval successful!");
+    } catch (err) {
+      alert(err.response?.data?.message || "Bulk apply failed");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleBulkReject = async () => {
+    if (selectedRequests.length === 0) return alert("Select at least one request");
+    const reason = window.prompt(`Please provide a reason to reject ${selectedRequests.length} requests:`);
+    if (!reason) return;
+
+    setActionLoading("bulk");
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`http://localhost:5001/api/tutor/bulk-reject`, 
+        { passIds: selectedRequests, reason },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPendingRequests(prev => prev.filter(req => !selectedRequests.includes(req.gatepass_id)));
+      setSelectedRequests([]);
+      alert("Bulk rejection successful.");
+    } catch (err) {
+      alert(err.response?.data?.message || "Bulk reject failed");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedRequests(pendingRequests.map(req => req.gatepass_id));
+    } else {
+      setSelectedRequests([]);
+    }
+  };
+
+  const handleSelectOne = (id) => {
+    if (selectedRequests.includes(id)) {
+      setSelectedRequests(prev => prev.filter(reqId => reqId !== id));
+    } else {
+      setSelectedRequests(prev => [...prev, id]);
+    }
+  };
+
+  // Filter students based on search term
+  const filteredStudents = departmentStudents.filter(student => {
+    try {
+      return student.User?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.User?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    } catch (e) {
+      return false;
+    }
+  });
+
+  // Get current user's staff ID from context or staff profile
+  const userStaffId = staffProfile?.staff_id || user?.Staff?.staff_id;
+
+  // Separate assigned and unassigned students
+  const assignedStudents = filteredStudents.filter(s => s.AssignedStaffStaffId === userStaffId);
+  const unassignedStudents = filteredStudents.filter(s => !s.AssignedStaffStaffId || s.AssignedStaffStaffId !== userStaffId);
+
+  return (
+    <div className="dashboard-wrapper">
+      <Sidebar
+        role="tutor"
+        tabs={tabs}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onLogout={logout}
+      />
+
+      <div className="dashboard-main">
+        <Navbar user={user} onLogout={logout} />
+
+        <div className="dashboard-content">
+          <div className="content-header">
+            <h1>👨‍🏫 Tutor Dashboard</h1>
+            <p>Manage gate pass requests and student assignments</p>
+          </div>
+
+          {error && (
+            <div className="error-banner">
+              <span>❌</span>
+              <p>{error}</p>
+            </div>
+          )}
+
+          {/* Pending Requests Tab */}
+          {activeTab === "pending" && (
+            <div className="requests-container">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2>⏳ Pending Gate Pass Requests</h2>
+                {pendingRequests.length > 0 && (
+                  <div className="bulk-actions" style={{ display: 'flex', gap: '10px' }}>
+                    <button 
+                      className="btn btn-sm btn-success" 
+                      onClick={handleBulkApprove} 
+                      disabled={selectedRequests.length === 0 || actionLoading === "bulk"}
+                    >
+                      ✅ Approve Selected ({selectedRequests.length})
+                    </button>
+                    <button 
+                      className="btn btn-sm btn-danger" 
+                      onClick={handleBulkReject} 
+                      disabled={selectedRequests.length === 0 || actionLoading === "bulk"}
+                    >
+                      ❌ Reject Selected ({selectedRequests.length})
+                    </button>
+                  </div>
+                )}
+              </div>
+              {pendingRequests.length === 0 ? (
+                <div className="empty-state">
+                  <p>✨ No pending requests</p>
+                  <span>All requests have been reviewed</span>
+                </div>
+              ) : (
+                <div className="requests-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>
+                          <input 
+                            type="checkbox" 
+                            onChange={handleSelectAll} 
+                            checked={pendingRequests.length > 0 && selectedRequests.length === pendingRequests.length}
+                          />
+                        </th>
+                        <th>Student</th>
+                        <th>Year</th>
+                        <th>Reason</th>
+                        <th>Out Time</th>
+                        <th>Return</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingRequests.map((req) => (
+                        <tr key={req.gatepass_id}>
+                          <td>
+                            <input 
+                              type="checkbox" 
+                              checked={selectedRequests.includes(req.gatepass_id)}
+                              onChange={() => handleSelectOne(req.gatepass_id)}
+                            />
+                          </td>
+                          <td>
+                            <strong>{req.Student?.User?.name || "Unknown"}</strong>
+                            {req.Student?.parent_phone && (
+                              <div style={{ marginTop: '5px', fontSize: '0.85em' }}>
+                                <a href={`tel:${req.Student.parent_phone}`} style={{ textDecoration: 'none', color: '#007bff' }}>
+                                  📞 {req.Student.parent_phone}
+                                </a>
+                              </div>
+                            )}
+                          </td>
+                          <td>{req.Student?.year || "N/A"}nd</td>
+                          <td>{req.reason}</td>
+                          <td>{formatTime(req.out_time)}</td>
+                          <td>{formatTime(req.expected_return)}</td>
+                          <td>
+                            <button
+                              className="btn btn-sm btn-success"
+                              onClick={() => handleApprove(req.gatepass_id)}
+                              disabled={actionLoading === req.gatepass_id}
+                            >
+                              {actionLoading === req.gatepass_id ? "..." : "✅ Approve"}
+                            </button>
+                            <button
+                              className="btn btn-sm btn-danger"
+                              onClick={() => handleReject(req.gatepass_id)}
+                              disabled={actionLoading === req.gatepass_id}
+                            >
+                              {actionLoading === req.gatepass_id ? "..." : "❌ Reject"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Assign Students Tab */}
+          {activeTab === "assign" && (
+            <div className="assign-container">
+              <div className="assign-header">
+                <h2>📋 Student Assignment & Management</h2>
+                <p>Assign students to yourself as their tutor. Once assigned, they cannot be assigned to another staff member.</p>
+              </div>
+
+              <div className="search-box">
+                <input
+                  type="text"
+                  placeholder="🔍 Search by student name or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+                <span className="search-count">
+                  {filteredStudents.length} students found
+                </span>
+              </div>
+
+              {loading ? (
+                <div className="loading-state">
+                  <div className="spinner"></div>
+                  <p>Loading students...</p>
+                </div>
+              ) : filteredStudents.length === 0 ? (
+                <div className="empty-state">
+                  <p>🔍 No students found</p>
+                  <span>Try adjusting your search criteria</span>
+                </div>
+              ) : (
+                <>
+                  {/* Assigned Students Section */}
+                  {assignedStudents.length > 0 && (
+                    <div className="students-section">
+                      <h3 className="section-title">
+                        ✅ Your Assigned Students ({assignedStudents.length})
+                      </h3>
+                      <div className="students-grid">
+                        {assignedStudents.map((student) => (
+                          <StudentAssignmentCard
+                            key={student.student_id}
+                            student={student}
+                            isAssignedToMe={true}
+                            onAssignmentChange={fetchDepartmentStudents}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Unassigned/Other Students Section */}
+                  <div className="students-section">
+                    <h3 className="section-title">
+                      ⭕ Available Students ({unassignedStudents.length})
+                    </h3>
+                    {unassignedStudents.length === 0 ? (
+                      <div className="empty-state">
+                        <p>🎉 You have assigned all available students!</p>
+                      </div>
+                    ) : (
+                      <div className="students-grid">
+                        {unassignedStudents.map((student) => (
+                          <StudentAssignmentCard
+                            key={student.student_id}
+                            student={student}
+                            isAssignedToMe={false}
+                            onAssignmentChange={fetchDepartmentStudents}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
+
+

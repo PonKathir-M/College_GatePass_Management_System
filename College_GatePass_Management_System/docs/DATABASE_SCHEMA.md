@@ -1,0 +1,6 @@
+Users (user_id, name, email, role)
+Departments (department_id, department_name)
+Students (student_id, year, category)
+GatePasses (gatepass_id, status)
+SecurityLogs (actual_out, actual_in)
+Notifications (message)
